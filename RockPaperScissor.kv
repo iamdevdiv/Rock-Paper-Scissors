@@ -1,3 +1,219 @@
 #:kivy 2.0.0
-#: set back_button_radius 30
 
+<MainMenu>:
+    audio_switch_btn: audio_switch
+    Widget:
+        opacity: 0.7
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'Images/bg.png'
+
+    Widget:
+        Button:
+            size: dp(40), dp(40)
+            background_color: 0, 0, 0, 0
+            pos: root.width - self.width - dp(10), root.height - self.height - dp(10)
+            on_release: root.toggle_sound()
+            Image:
+                id: audio_switch
+                size: dp(40), dp(40)
+                source: 'Images/audio_on.png'
+                center_x: self.parent.center_x
+                center_y: self.parent.center_y
+
+    Widget:
+        Image:
+            source: 'Images/title.png'
+            size: root.width, root.height / 2.5
+            pos: 0, root.height - self.height
+
+        Button:
+            text: 'Play'
+            background_normal: ''
+            background_color: 92/255, 147/255, 237/255
+            size: root.width * .7, dp(50)
+            pos: root.center_x - self.width / 2, root.center_y - self.height / 2
+            on_press: root.click_sound.play()
+            on_release: root.manager.current = 'Enter Name'
+
+        Button:
+            text: 'Rules'
+            background_normal: ''
+            background_color: 92/255, 147/255, 237/255
+            size: root.width * .7, dp(50)
+            pos: root.center_x - self.width / 2, root.center_y - self.height - dp(40)
+            on_press: root.click_sound.play()
+
+        Button:
+            text: 'Credits'
+            background_normal: ''
+            background_color: 92/255, 147/255, 237/255
+            size: root.width * .7, dp(50)
+            pos: root.center_x - self.width / 2, root.center_y - self.height - dp(105)
+            on_press: root.click_sound.play()
+
+        Button:
+            text: 'Quit'
+            background_normal: ''
+            background_color: 92/255, 147/255, 237/255
+            size: root.width * .7, dp(50)
+            pos: root.center_x - self.width / 2, root.center_y - self.height - dp(170)
+            on_release: root.quit_game()
+            on_press: root.click_sound.play()
+
+
+<EnterName>:
+    username: user_name
+    start_button: start_button
+    Widget:
+        opacity: 0.7
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'Images/bg.png'
+
+    Widget:
+        Button:
+            size: dp(40), dp(40)
+            background_color: 0, 0, 0, 0
+            pos: dp(10), root.height - self.height - dp(10)
+            on_press:
+                root.click_sound.play()
+                self.opacity = 0.5
+            on_touch_up: self.opacity = 1
+            on_release: root.manager.current = 'Main Menu'
+            Image:
+                size: dp(40), dp(40)
+                source: 'Images/back_button.png'
+                center_x: self.parent.center_x
+                center_y: self.parent.center_y
+
+        Image:
+            id: robot
+            source: 'Images/ask_name.png'
+            size: dp(180), dp(180)
+            pos: root.center_x - self.width / 2, root.center_y + self.height / 2
+
+        Label:
+            text: "What's your name?"
+            font_size: dp(25)
+            center_x: root.center_x
+            center_y: root.center_y + self.height / 2
+
+        TextInput:
+            id: user_name
+            background_normal: ''
+            background_color: 175/255, 219/255, 191/255, 0.8
+            foreground_color: 1, 1, 0
+            cursor_color: 1, 1, 0
+            size: root.width * .8, dp(40)
+            font_size: dp(25)
+            halign: 'center'
+            valign: 'top'
+            pos: root.center_x - self.width / 2, root.center_y - self.height / 2
+            multiline: False
+            on_text: root.check_length()
+
+        Button:
+            id: start_button
+            disabled: True
+            text: 'Start'
+            background_normal: ''
+            background_color: 92/255, 147/255, 237/255
+            size: root.width * 0.5, dp(40)
+            pos: root.center_x - self.width / 2, root.center_y - self.height - dp(50)
+            on_press: root.begin_sound.play()
+            on_release:
+                root.set_name()
+                root.manager.current = 'Blank Screen'
+                root.begin_game()
+
+<MainGame>:
+    Widget:
+        opacity: 0.7
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'Images/bg.png'
+
+    Widget:
+        Button:
+            size: dp(40), dp(40)
+            background_color: 0, 0, 0, 0
+            pos: dp(10), root.height - self.height - dp(10)
+            on_press:
+                root.click_sound.play()
+                self.opacity = 0.5
+            on_touch_up: self.opacity = 1
+            on_release: root.quit_game()
+            Image:
+                size: dp(40), dp(40)
+                source: 'Images/exit.png'
+                center_x: self.parent.center_x
+                center_y: self.parent.center_y
+
+    GridLayout:
+        cols: 1
+        rows: 6
+        padding: 10
+
+        Label:
+            text: ''
+            size_hint_y: None
+            height: root.height * 0.05
+
+        Label:
+            font_size: dp(25)
+            text: "It's your turn !!"
+            size_hint_y: None
+
+        Image:
+            size: root.width * 0.9, root.height / 4
+            source: 'Images/rock.png'
+
+        Image:
+            size: root.width * 0.9, root.height / 4
+            source: 'Images/paper.png'
+
+        Image:
+            size: root.width * 0.9, root.height / 4
+            source: 'Images/scissor.png'
+
+        Label:
+            text: ''
+            size_hint_y: None
+            height: root.height * 0.1
+
+<ExitPrompt>:
+    Widget:
+        id: exit_prompt_background
+        canvas:
+            Rectangle:
+                pos: self.center_x - (root.width * 0.8) / 2, self.center_y - (root.height / 4) / 2
+                size: root.width * 0.8, root.height / 4
+        Label:
+            text: 'Return to Main Menu?'
+            color: 0, 0, 0, 1
+            font_size: dp(18)
+            center_x: exit_prompt_background.center_x
+            center_y: exit_prompt_background.center_y + self.height * 0.4
+
+        Button:
+            text: 'NO'
+            size: root.width / 4, root.height / 12
+            center_x: exit_prompt_background.center_x - self.width * 0.8
+            center_y: exit_prompt_background.center_y - self.height / 2
+            on_press: root.click_sound.play()
+            on_release: root.clear_widgets()
+
+        Button:
+            text: 'YES'
+            size: root.width / 4, root.height / 12
+            center_x: exit_prompt_background.center_x + self.width * 0.8
+            center_y: exit_prompt_background.center_y - self.height / 2
+            on_press: root.click_sound.play()
+            on_release: root.quit_game()
