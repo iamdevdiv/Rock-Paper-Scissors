@@ -1,7 +1,6 @@
 #:kivy 2.0.0
 
 <MainMenu>:
-    audio_switch_btn: audio_switch
     Widget:
         opacity: 0.7
         canvas.before:
@@ -15,9 +14,9 @@
             size: dp(40), dp(40)
             background_color: 0, 0, 0, 0
             pos: root.width - self.width - dp(10), root.height - self.height - dp(10)
-            on_release: root.toggle_sound()
+            on_release: root.toggle_music()
             Image:
-                id: audio_switch
+                id: audio_switch_btn
                 size: dp(40), dp(40)
                 source: 'Images/audio_on.png'
                 center_x: self.parent.center_x
@@ -65,8 +64,6 @@
 
 
 <EnterName>:
-    username: user_name
-    start_button: start_button
     Widget:
         opacity: 0.7
         canvas.before:
@@ -104,7 +101,7 @@
             center_y: root.center_y + self.height / 2
 
         TextInput:
-            id: user_name
+            id: username
             background_normal: ''
             background_color: 175/255, 219/255, 191/255, 0.8
             foreground_color: 1, 1, 0
@@ -115,7 +112,7 @@
             valign: 'top'
             pos: root.center_x - self.width / 2, root.center_y - self.height / 2
             multiline: False
-            on_text: root.check_length()
+            on_text: root.validate_username()
 
         Button:
             id: start_button
@@ -127,12 +124,12 @@
             pos: root.center_x - self.width / 2, root.center_y - self.height - dp(50)
             on_press: root.begin_sound.play()
             on_release:
-                root.set_name()
                 root.manager.current = 'Blank Screen'
                 root.begin_game()
 
 <MainGame>:
     Widget:
+        id: background_image
         opacity: 0.7
         canvas.before:
             Rectangle:
@@ -141,6 +138,7 @@
                 source: 'Images/bg.png'
 
     Widget:
+        id: switch_to_home
         Button:
             size: dp(40), dp(40)
             background_color: 0, 0, 0, 0
@@ -149,7 +147,7 @@
                 root.click_sound.play()
                 self.opacity = 0.5
             on_touch_up: self.opacity = 1
-            on_release: root.quit_game()
+            on_release: root.show_exit_prompt()
             Image:
                 size: dp(40), dp(40)
                 source: 'Images/exit.png'
@@ -157,6 +155,7 @@
                 center_y: self.parent.center_y
 
     GridLayout:
+        id: game_actions
         cols: 1
         rows: 6
         padding: 10
@@ -171,9 +170,14 @@
             text: "It's your turn !!"
             size_hint_y: None
 
-        Image:
+        Button:
             size: root.width * 0.9, root.height / 4
-            source: 'Images/rock.png'
+            background_color: 0, 0, 0, 0
+            Image:
+                size: root.width * 0.9, root.height / 4
+                source: 'Images/rock.png'
+                center_x: self.parent.center_x
+                center_y: self.parent.center_y
 
         Image:
             size: root.width * 0.9, root.height / 4
@@ -195,6 +199,7 @@
             Rectangle:
                 pos: self.center_x - (root.width * 0.8) / 2, self.center_y - (root.height / 4) / 2
                 size: root.width * 0.8, root.height / 4
+
         Label:
             text: 'Return to Main Menu?'
             color: 0, 0, 0, 1
@@ -208,7 +213,7 @@
             center_x: exit_prompt_background.center_x - self.width * 0.8
             center_y: exit_prompt_background.center_y - self.height / 2
             on_press: root.click_sound.play()
-            on_release: root.clear_widgets()
+            on_release: root.remove_prompt()
 
         Button:
             text: 'YES'
@@ -216,4 +221,4 @@
             center_x: exit_prompt_background.center_x + self.width * 0.8
             center_y: exit_prompt_background.center_y - self.height / 2
             on_press: root.click_sound.play()
-            on_release: root.quit_game()
+            on_release: root.go_to_main_menu()
