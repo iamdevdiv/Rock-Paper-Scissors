@@ -3,12 +3,12 @@
 
 # Imports
 import random
-from kivy.app import App
-from kivy.core.audio import SoundLoader, Sound
-from kivy.clock import Clock
-from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition, NoTransition
-from kivy.properties import StringProperty, ObjectProperty
 from functools import partial
+from kivy.app import App
+from kivy.clock import Clock
+from kivy.core.audio import SoundLoader, Sound
+from kivy.properties import ObjectProperty
+from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition, NoTransition
 
 # Sound and music related stuff
 Sound.volume = 1
@@ -20,10 +20,12 @@ main_game_music = SoundLoader.load('Sounds/main_game.mp3')
 main_game_music.loop = True
 main_game_music.volume = 1
 
+
 # Global Variables
 screen_manager = ScreenManager(transition=WipeTransition())
 name_of_user = ''
 main_game = None  # for resetting the game when user exits from 'MainGame' screen
+cheats_screen = None  # for resetting cheats when user triple tap anywhere on 'MainGame' screen
 
 
 # First screen of game: Main Menu
@@ -95,7 +97,6 @@ class BlankScreen(Screen):
 # This is the screen where the game will be played
 class MainGame(Screen):
     click_sound = SoundLoader.load("Sounds/click.ogg")
-    confirmation_sound = SoundLoader.load("Sounds/confirmation.ogg")
     rock_clicked_sound = SoundLoader.load("Sounds/rock.mp3")
     paper_clicked_sound = SoundLoader.load("Sounds/paper.mp3")
     scissor_clicked_sound = SoundLoader.load("Sounds/scissor.mp3")
@@ -134,9 +135,12 @@ class MainGame(Screen):
     schedule_timings = {"rst": 2, "rsp": 1.7}  # rst: round_start_time, rsp: round_sound_play
     game_playable = True
 
+    always_win = False
+    always_lose = False
+    clicks = 0
+
     def show_exit_prompt(self):
         if self.game_playable:
-            self.confirmation_sound.play()
             self.ids.background_image.opacity = 0.4
             self.ids.switch_to_home.opacity = 0.4
             self.ids.game_actions.opacity = 0.4
@@ -167,6 +171,18 @@ class MainGame(Screen):
             self.select_paper.opacity = 0.7
             self.select_scissor.disabled = True
             self.select_scissor.opacity = 0.7
+
+    def get_computer_choice(self, user_choice):
+        choices = ["Rock", "Paper", "Scissor"]
+        choices_for_win = {"Rock": "Scissor", "Paper": "Rock", "Scissor": "Paper"}
+        choices_for_lose = {"Rock": "Paper", "Paper": "Scissor", "Scissor": "Rock"}
+
+        if self.always_win == True:
+            return choices_for_win[user_choice]
+        elif self.always_lose == True:
+            return choices_for_lose[user_choice]
+        else:
+            return random.choice(choices)
 
     def set_computer_choice(self, choice):
         self.computer_choice_text.text = choice
@@ -237,7 +253,7 @@ class MainGame(Screen):
         user_choice = options[selection]
         self.user_choice_text.text = user_choice
         Clock.schedule_once(partial(self.set_message, "Computer's turn..."), 0.5)
-        computer_choice = random.choice(list(options.values()))
+        computer_choice = self.get_computer_choice(user_choice)
         Clock.schedule_once(partial(self.set_message, "", True, choice=computer_choice), 1.5)
         Clock.schedule_once(partial(self.get_winner, {user_choice: "player", computer_choice: "computer"}), 2)
 
@@ -282,6 +298,19 @@ class MainGame(Screen):
         self.mute_music()
         screen_manager.transition = NoTransition()
         screen_manager.current = "Pause Screen"
+
+    def reset_clicks(self, delta_time):
+        self.clicks = 0
+
+    def reset_cheats(self):
+        if self.clicks == 0:
+            Clock.schedule_once(self.reset_clicks, 0.5)
+        self.clicks += 1
+        if self.clicks == 3 and self.message.text == "It's your turn !!":
+            self.always_win = False
+            self.always_lose = False
+            cheats_screen.always_win_button.state = "normal"
+            cheats_screen.always_lose_button.state = "normal"
 
 
 # This is actually a widget which will be shown when user clicks on 'exit.png' image of 'MainGame' screen
@@ -328,11 +357,52 @@ class PauseScreen(Screen):
         screen_manager.current = 'Main Game'
         screen_manager.transition = WipeTransition()
 
+    top_button = ObjectProperty(None)
+    bottom_button = ObjectProperty(None)
+
+    clicks = 0
+
+    def reset_clicks(self, delta_time):
+        self.clicks = 0
+
+    def enable_top_button(self):
+        if self.clicks == 0:
+            Clock.schedule_once(self.reset_clicks, 0.5)
+        self.clicks += 1
+        if self.clicks == 3:
+            self.top_button.disabled = False
+            self.bottom_button.disabled = True
+
+    def show_cheats(self):
+        if self.clicks == 0:
+            Clock.schedule_once(self.reset_clicks, 0.5)
+        self.clicks += 1
+        if self.clicks == 3:
+            self.top_button.disabled = True
+            self.bottom_button.disabled = False
+            screen_manager.current = "Cheats Screen"
+
+
+class CheatsScreen(Screen):
+    always_win_button = ObjectProperty(None)
+    always_lose_button = ObjectProperty(None)
+
+    def toggle_cheats(self):
+        if self.always_win_button.state == "normal":
+            main_game.always_win = False
+        elif self.always_win_button.state == "down":
+            main_game.always_win = True
+
+        if self.always_lose_button.state == "normal":
+            main_game.always_lose = False
+        elif self.always_lose_button.state == "down":
+            main_game.always_lose = True
+
 
 # This is the root widget of all the screens and widgets of the game
 class RockPaperScissorApp(App):
     def build(self):
-        global main_game
+        global main_game, cheats_screen
         screen_manager.add_widget(MainMenu(name='Main Menu'))
         screen_manager.add_widget(EnterName(name='Enter Name'))
         screen_manager.add_widget(BlankScreen(name='Blank Screen'))
@@ -340,6 +410,8 @@ class RockPaperScissorApp(App):
         screen_manager.add_widget(main_game)
         screen_manager.add_widget(ExitPrompt(name='Exit Prompt'))
         screen_manager.add_widget(PauseScreen(name='Pause Screen'))
+        cheats_screen = CheatsScreen(name='Cheats Screen')
+        screen_manager.add_widget(cheats_screen)
         bg_music.play()
         return screen_manager
 
