@@ -105,7 +105,7 @@ class MainGame(Screen):
     winner_sound = SoundLoader.load("Sounds/winner.ogg")
     loser_sound = SoundLoader.load("Sounds/loser.ogg")
     tie_sound = SoundLoader.load("Sounds/tie.ogg")
-    its_a_tie_sound = SoundLoader.load("Sounds/it's_a_tie.ogg")
+    tie_breaker_sound = SoundLoader.load("Sounds/tie_breaker.ogg")
     round_one_sound = SoundLoader.load("Sounds/round_1.ogg")
     round_two_sound = SoundLoader.load("Sounds/round_2.ogg")
     round_three_sound = SoundLoader.load("Sounds/round_3.ogg")
@@ -113,9 +113,10 @@ class MainGame(Screen):
     round_five_sound = SoundLoader.load("Sounds/round_5.ogg")
     final_round_sound = SoundLoader.load("Sounds/final_round.ogg")
     round_sounds = {1: round_one_sound, 2: round_two_sound, 3: round_three_sound, 4: round_four_sound,
-                    5: round_five_sound, 6: final_round_sound}
+                    5: round_five_sound, 6: final_round_sound, 7: tie_breaker_sound}
     sounds_for_mute_unmute_stop = [click_sound, rock_clicked_sound, paper_clicked_sound, scissor_clicked_sound,
-                                   you_win_sound, you_lose_sound, winner_sound, loser_sound, tie_sound, its_a_tie_sound]
+                                   you_win_sound, you_lose_sound, winner_sound, loser_sound, tie_sound,
+                                   tie_breaker_sound]
 
     user_name = ObjectProperty(None)
     message = ObjectProperty(None)
@@ -177,9 +178,9 @@ class MainGame(Screen):
         choices_for_win = {"Rock": "Scissor", "Paper": "Rock", "Scissor": "Paper"}
         choices_for_lose = {"Rock": "Paper", "Paper": "Scissor", "Scissor": "Rock"}
 
-        if self.always_win == True:
+        if self.always_win:
             return choices_for_win[user_choice]
-        elif self.always_lose == True:
+        elif self.always_lose:
             return choices_for_lose[user_choice]
         else:
             return random.choice(choices)
@@ -221,10 +222,16 @@ class MainGame(Screen):
         self.user_choice_text.color = 203/255, 158/255, 249/255
         self.computer_choice_text.color = 203/255, 158/255, 249/255
         self.round_on_screen.opacity = 1
-        self.round_on_screen.text = f"ROUND {self.current_round}" if self.current_round < 6 else "FINAL ROUND"
+        if self.current_round < 6:
+            self.round_on_screen.text = f"ROUND {self.current_round}"
+        elif self.current_round == 6:
+            self.round_on_screen.text = "FINAL ROUND"
+        else:
+            self.round_on_screen.text = "TIE BREAKER"
+        # self.round_on_screen.text = f"ROUND {self.current_round}" if self.current_round < 6 else "FINAL ROUND"
 
     def start_round(self, delta_time=0):
-        if self.current_round <= 6:
+        if self.current_round <= 6 or self.points["user"] == self.points["computer"]:
             Clock.schedule_once(lambda dt: self.round_sounds[self.current_round].play(), self.schedule_timings["rsp"])
             Clock.schedule_once(self.set_round_text, self.schedule_timings["rst"])
             Clock.schedule_once(partial(self.set_message, "It's your turn !!"), self.schedule_timings["rst"])
@@ -240,11 +247,6 @@ class MainGame(Screen):
                 self.loser_sound.play()
                 self.user_choice_text.text = "LOSER"
                 self.computer_choice_text.text = "WINNER"
-            else:
-                self.its_a_tie_sound.play()
-                self.user_choice_text.text = ""
-                self.computer_choice_text.text = ""
-                self.message.text = "IT'S A TIE !!"
             self.play_again_button.disabled = False
             self.play_again_button.opacity = 1
 

@@ -1,0 +1,32 @@
+----- RULES -----
+You might have played Rock-Paper-Scissors in your childhood or maybe you still play and enjoy it. But if you are one of those who are unknown to this game, here are the rules for you:
+
+# Players
+Rock-Paper-Scissors is played between two or more players. But in this virtual game, there will be only two players - First one is YOU and second one is COMPUTER.
+
+# Game
+As given in the title of the game, players have to choose one of the three choices - ROCK or PAPER or SCISSOR. There would be six rounds in the game. First turn would be yours, then that of computer. The choices of both the players would be checked and winner would be decided on these conditions:
+> ROCK beats SCISSOR
+> SCISSOR beats PAPER
+> PAPER beats ROCK
+So, if you choose PAPER and computer chooses ROCK, then you will win the round. In contrast, if you choose ROCK and computer chooses PAPER, then you will lose the round. If the choices of both the players is same, then it would be a TIE. The player who wins the round would get one point. If a tie occurs, no one would get point and the round will be played again.
+After final round, the player who has more points would win the game. If both the players score same points, then there would be a TIEBREAKER - Seventh round will be played. The player who would win this round will be the winner of the game.
+
+# Secret
+You cannot cheat with your friends in Rock-Paper-Scissor when you play it face-to-face, but in this virtual game, you can. Something is hidden on the Pause screen !!
+
+
+----- CREDITS -----
+Created by Divyanshu Tiwari (GitHub: @devDiv629)
+
+Icons - Kenney - www.kenney.nl
+	Icon made by Freepik from www.flaticon.com
+	Icon made by DinosoftLabs from www.flaticon.com
+
+Sound Effects - Kenney - www.kenney.nl
+		YouTube Audio Library
+
+Music - www.zapsplat.com
+
+Typeface (Fonts) - www.fontspace.com
+
