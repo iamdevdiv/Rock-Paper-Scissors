@@ -1,5 +1,4 @@
 #:kivy 2.0.0
-#:import NoTransition kivy.uix.screenmanager
 
 <MainMenu>:
     Widget:
@@ -51,6 +50,7 @@
             size: root.width * .7, root.height * 0.08
             pos: root.center_x - self.width / 2, play_button.pos[1] - self.height - dp(15)
             on_press: root.click_sound.play()
+            on_release: root.manager.current = 'Rules Screen'
 
         Button:
             id: credits_button
@@ -63,6 +63,7 @@
             size: root.width * .7, root.height * 0.08
             pos: root.center_x - self.width / 2, rules_button.pos[1] - self.height - dp(15)
             on_press: root.click_sound.play()
+            on_release: root.manager.current = 'Credits Screen'
 
         Button:
             text: 'Quit'
@@ -337,7 +338,7 @@
 
         Button:
             id: play_again
-            text: "Play Again"
+            text: "Play again"
             disabled: True
             size: root.width * 0.9, dp(40)
             center_x: root.center_x
@@ -490,3 +491,188 @@
             center_x: root.center_x
             center_y: self.height
             halign: 'center'
+
+<SpecialLabel@Label>:
+    size_hint_y: None
+    text_size: root.width, None
+    halign: 'center'
+    height: self.texture_size[1]
+    padding: 10, 10
+    markup: True
+
+<Rules@StackLayout>:
+    SpecialLabel:
+        text: "PLAYERS"
+        color: 0, 1, 0
+        font_size: dp(18)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "Rock-Paper-Scissors is played between two or more players. But in this virtual game, there will be only two players - First one is [color=f2aa9b]YOU[/color] and second one is [color=f2aa9b]COMPUTER[/color]."
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "GAME"
+        color: 0, 1, 0
+        font_size: dp(18)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "As given in the title of the game, players have to choose one of the three choices - [color=f2aa9b]ROCK[/color] or [color=f2aa9b]PAPER[/color] or [color=f2aa9b]SCISSOR[/color]. There would be six rounds in the game. The first turn would be yours, and then that of the computer. Don't worry, computer's choice would be random. The choices of both the players would be checked and winner would be decided on these conditions:"
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "> [color=f2aa9b]ROCK[/color] beats [color=f2aa9b]SCISSOR[/color]\n> [color=f2aa9b]SCISSOR[/color] beats [color=f2aa9b]PAPER[/color]\n> [color=f2aa9b]PAPER[/color] beats [color=f2aa9b]ROCK[/color]"
+        font_name: "Fonts/cano.ttf"
+        halign: "left"
+
+    SpecialLabel:
+        text: "So, if you choose [color=f2aa9b]PAPER[/color] and the computer chooses [color=f2aa9b]ROCK[/color], then you will win the round. In contrast, if you choose [color=f2aa9b]ROCK[/color] and the computer chooses [color=f2aa9b]PAPER[/color], then you will lose the round. If the choices of both the players are the same, then it would be a [color=f2aa9b]TIE[/color]. The player who wins the round would get one point. If a tie occurs, no one would get a point and the round would be played again.\nAfter final round, the player who has more points would win the game. If both players score the same points, a [color=f2aa9b]TIEBREAKER[/color] round will be played. The player who would win this round will be the winner of the game."
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "SECRET"
+        color: 0, 1, 0
+        font_size: dp(18)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "You cannot cheat with your friends in Rock-Paper-Scissors when you play it face-to-face, but in this virtual game, you can. Something is hidden on the [color=f2aa9b]Pause[/color] screen!!"
+        font_name: "Fonts/cano.ttf"
+
+<RulesScreen>:
+    Widget:
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'Images/bg_2.jpg'
+
+        Button:
+            size: dp(40), dp(40)
+            background_color: 0, 0, 0, 0
+            pos: dp(10), root.height - self.height - dp(10)
+            on_press:
+                root.click_sound.play()
+                self.opacity = 0.5
+            on_touch_up: self.opacity = 1
+            on_release: root.manager.current = 'Main Menu'
+            Image:
+                size: self.parent.size
+                source: 'Images/back_button.png'
+                center: self.parent.center
+
+        Label:
+            text: 'Rules'
+            color: 1, 0, 0
+            center_x: root.center_x
+            center_y: root.height - self.height * 0.75
+            font_name: 'Fonts/moonhouse.ttf'
+            font_size: dp(30)
+
+
+    ScrollView:
+        pos: root.center_x - self.width / 2, root.top - self.height - dp(100)
+
+        Rules:
+            size_hint_y: None
+            height: self.minimum_height + dp(100)
+
+<Credits@StackLayout>:
+    SpecialLabel:
+        text: "Developer"
+        color: 0, 1, 0
+        font_size: dp(20)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "Divyanshu Tiwari\n(GitHub: @devDiv629)"
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "Images"
+        color: 0, 1, 0
+        font_size: dp(20)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "Unsplash - www.unsplash.com"
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "Icons"
+        color: 0, 1, 0
+        font_size: dp(20)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "Kenney - www.kenney.nl\nIcon made by Freepik from www.flaticon.com\nIcon made by DinosoftLabs from www.flaticon.com"
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "Sound Effects"
+        color: 0, 1, 0
+        font_size: dp(20)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "Kenney - www.kenney.nl\nYouTube Audio Library"
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "Music"
+        color: 0, 1, 0
+        font_size: dp(20)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "www.zapsplat.com"
+        font_name: "Fonts/cano.ttf"
+
+    SpecialLabel:
+        text: "Fonts"
+        color: 0, 1, 0
+        font_size: dp(20)
+        font_name: 'Fonts/polygon_party.ttf'
+
+    SpecialLabel:
+        text: "www.fontspace.com"
+        font_name: "Fonts/cano.ttf"
+
+<CreditsScreen>:
+    Widget:
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'Images/bg_2.jpg'
+
+        Button:
+            size: dp(40), dp(40)
+            background_color: 0, 0, 0, 0
+            pos: dp(10), root.height - self.height - dp(10)
+            on_press:
+                root.click_sound.play()
+                self.opacity = 0.5
+            on_touch_up: self.opacity = 1
+            on_release: root.manager.current = 'Main Menu'
+            Image:
+                size: self.parent.size
+                source: 'Images/back_button.png'
+                center: self.parent.center
+
+        Label:
+            id: credits
+            text: 'Credits'
+            color: 1, 0, 0
+            font_name: 'Fonts/moonhouse.ttf'
+            font_size: dp(30)
+            center_x: root.center_x
+            center_y: root.height - self.height * 0.75
+
+    ScrollView:
+        pos: root.center_x - self.width / 2, root.top - self.height - dp(100)
+
+        Credits:
+            size_hint_y: None
+            height: self.minimum_height + dp(100)

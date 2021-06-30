@@ -9,8 +9,8 @@ As given in the title of the game, players have to choose one of the three choic
 > ROCK beats SCISSOR
 > SCISSOR beats PAPER
 > PAPER beats ROCK
-So, if you choose PAPER and computer chooses ROCK, then you will win the round. In contrast, if you choose ROCK and computer chooses PAPER, then you will lose the round. If the choices of both the players is same, then it would be a TIE. The player who wins the round would get one point. If a tie occurs, no one would get point and the round will be played again.
-After final round, the player who has more points would win the game. If both the players score same points, then there would be a TIEBREAKER - Seventh round will be played. The player who would win this round will be the winner of the game.
+So, if you choose PAPER and the computer chooses ROCK, then you will win the round. In contrast, if you choose ROCK and the computer chooses PAPER, then you will lose the round. If the choices of both the players are the same, then it would be a TIE. The player who wins the round would get one point. If a tie occurs, no one would get a point and the round would be played again.
+After the final round, the player who has more points would win the game. If both players score the same points, a TIEBREAKER round will be played. The player who would win this round will be the winner of the game.
 
 # Secret
 You cannot cheat with your friends in Rock-Paper-Scissor when you play it face-to-face, but in this virtual game, you can. Something is hidden on the Pause screen !!
