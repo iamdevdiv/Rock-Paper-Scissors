@@ -7,6 +7,7 @@ from functools import partial
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader, Sound
+from kivy.core.window import Window
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition, NoTransition
 
@@ -148,6 +149,7 @@ class MainGame(Screen):
             self.ids.game_actions.opacity = 0.4
             self.ids.pause_game.opacity = 0.4
 
+            self.play_again_button.disabled = True
             self.game_playable = False
             self.add_widget(ExitPrompt())
 
@@ -284,6 +286,10 @@ class MainGame(Screen):
         screen_manager.remove_widget(main_game)
         main_game = MainGame(name="Main Game")
         main_game.user_name.text = name_of_user
+        if cheats_screen.always_win_button.state == "down":
+            main_game.always_win = True
+        elif cheats_screen.always_lose_button.state == "down":
+            main_game.always_lose = True
         screen_manager.add_widget(main_game)
         screen_manager.current = "Main Game"
         Clock.schedule_once(main_game.start_round, 1)
@@ -368,6 +374,7 @@ class ExitPrompt(Screen):
         main_game.ids.switch_to_home.opacity = 1
         main_game.ids.game_actions.opacity = 1
         main_game.ids.pause_game.opacity = 1
+        main_game.play_again_button.disabled = False
         main_game.remove_widget(self)  # remove exit prompt from 'MainGame' screen
         main_game.game_playable = True
 
@@ -445,6 +452,25 @@ class CreditsScreen(Screen):
 
 # This is the root widget of all the screens and widgets of the game
 class RockPaperScissorApp(App):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        Window.bind(on_keyboard=self.back_button)
+
+    def back_button(self, window, key, *largs):  # handle back button click on android smartphone
+        if key == 27:
+            if screen_manager.current == "Enter Name":
+                screen_manager.current = "Main Menu"
+            elif screen_manager.current == "Cheats Screen":
+                screen_manager.current = "Pause Screen"
+            elif screen_manager.current == "Rules Screen":
+                screen_manager.current = "Main Menu"
+            elif screen_manager.current == "Credits Screen":
+                screen_manager.current = "Main Menu"
+            elif screen_manager.current == "Main Game":
+                main_game.show_exit_prompt()
+
+            return True
+
     def build(self):
         global main_game, cheats_screen
         screen_manager.add_widget(MainMenu(name='Main Menu'))
