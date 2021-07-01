@@ -14,9 +14,9 @@ from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition, NoTran
 Sound.volume = 1
 to_play_music = True
 
-bg_music = SoundLoader.load('Sounds/bg.mp3')
+bg_music = SoundLoader.load('Sounds/bg.ogg')
 bg_music.loop = True
-main_game_music = SoundLoader.load('Sounds/main_game.mp3')
+main_game_music = SoundLoader.load('Sounds/main_game.ogg')
 main_game_music.loop = True
 main_game_music.volume = 1
 
@@ -96,9 +96,9 @@ class BlankScreen(Screen):
 # This is the screen where the game will be played
 class MainGame(Screen):
     click_sound = SoundLoader.load("Sounds/click.ogg")
-    rock_clicked_sound = SoundLoader.load("Sounds/rock.mp3")
-    paper_clicked_sound = SoundLoader.load("Sounds/paper.mp3")
-    scissor_clicked_sound = SoundLoader.load("Sounds/scissor.mp3")
+    rock_clicked_sound = SoundLoader.load("Sounds/rock.ogg")
+    paper_clicked_sound = SoundLoader.load("Sounds/paper.ogg")
+    scissor_clicked_sound = SoundLoader.load("Sounds/scissor.ogg")
     you_win_sound = SoundLoader.load("Sounds/you_win.ogg")
     you_lose_sound = SoundLoader.load("Sounds/you_lose.ogg")
     winner_sound = SoundLoader.load("Sounds/winner.ogg")
