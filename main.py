@@ -43,13 +43,39 @@ class MainMenu(Screen):
         Sound.volume = 1 if Sound.volume == 0 else 0  # toggles the music by changing volume level
         bg_music.stop() if bg_music.state == "play" else bg_music.play()  # toggles state of background music
         # Change the source of image for representing the current state of music
-        if self.ids.audio_switch_btn.source == "Images/audio_on.png":
-            self.ids.audio_switch_btn.source = "Images/audio_off.png"
+        if self.ids.audio_switch_btn.source == "atlas://Images/myatlas/audio_on":
+            self.ids.audio_switch_btn.source = "atlas://Images/myatlas/audio_off"
             to_play_music = False
         else:
             self.click_sound.play()
-            self.ids.audio_switch_btn.source = "Images/audio_on.png"
+            self.ids.audio_switch_btn.source = "atlas://Images/myatlas/audio_on"
             to_play_music = True
+
+    @staticmethod
+    def add_screens():  # method to add screens to the screen manager when user clicks on 'Play' button
+        global main_game, cheats_screen
+        if "Enter Name" not in screen_manager.screen_names:
+            screen_manager.add_widget(EnterName(name="Enter Name"))
+        screen_manager.current = "Enter Name"
+        if "Blank Screen" not in screen_manager.screen_names:
+            screen_manager.add_widget(BlankScreen(name='Blank Screen'))
+            main_game = MainGame(name='Main Game')
+            screen_manager.add_widget(main_game)
+            screen_manager.add_widget(PauseScreen(name='Pause Screen'))
+            cheats_screen = CheatsScreen(name='Cheats Screen')
+            screen_manager.add_widget(cheats_screen)
+
+    @staticmethod
+    def switch_to_rules():
+        if "Rules Screen" not in screen_manager.screen_names:
+            screen_manager.add_widget(RulesScreen(name="Rules Screen"))
+        screen_manager.current = "Rules Screen"
+
+    @staticmethod
+    def switch_to_credits():
+        if "Credits Screen" not in screen_manager.screen_names:
+            screen_manager.add_widget(CreditsScreen(name="Credits Screen"))
+        screen_manager.current = "Credits Screen"
 
 
 # This screen appears after 'Play' button click of Main Menu: For getting name of user
@@ -460,34 +486,22 @@ class RockPaperScissorApp(App):
         super().__init__(**kwargs)
         Window.bind(on_keyboard=self.back_button)
 
-    def back_button(self, window, key, *largs):  # handle back button click on android smartphone
+    @staticmethod
+    def back_button(window, key, *largs):  # handle back button click on android smartphone
         if key == 27:
-            if screen_manager.current == "Enter Name":
+            if screen_manager.current in ["Enter Name", "Rules Screen", "Credits Screen"]:
                 screen_manager.current = "Main Menu"
             elif screen_manager.current == "Cheats Screen":
                 screen_manager.current = "Pause Screen"
-            elif screen_manager.current == "Rules Screen":
-                screen_manager.current = "Main Menu"
-            elif screen_manager.current == "Credits Screen":
-                screen_manager.current = "Main Menu"
             elif screen_manager.current == "Main Game":
                 main_game.show_exit_prompt()
+            elif screen_manager.current == "Main Menu":
+                RockPaperScissorApp().stop()
 
             return True
 
     def build(self):
-        global main_game, cheats_screen
         screen_manager.add_widget(MainMenu(name='Main Menu'))
-        screen_manager.add_widget(EnterName(name='Enter Name'))
-        screen_manager.add_widget(BlankScreen(name='Blank Screen'))
-        main_game = MainGame(name='Main Game')
-        screen_manager.add_widget(main_game)
-        screen_manager.add_widget(RulesScreen(name='Rules Screen'))
-        screen_manager.add_widget(CreditsScreen(name='Credits Screen'))
-        screen_manager.add_widget(ExitPrompt(name='Exit Prompt'))
-        screen_manager.add_widget(PauseScreen(name='Pause Screen'))
-        cheats_screen = CheatsScreen(name='Cheats Screen')
-        screen_manager.add_widget(cheats_screen)
         bg_music.play()
         return screen_manager
 
