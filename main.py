@@ -255,10 +255,14 @@ class MainGame(Screen):
         else:  # After the sixth round or tie breaker round, tell the user who is the winner
             if self.points["user"] > self.points["computer"]:
                 self.winner_sound.play()
+                self.user_choice_text.color = 0, 1, 0
+                self.computer_choice_text.color = 1, 0, 0
                 self.user_choice_text.text = "WINNER"
                 self.computer_choice_text.text = "LOSER"
             elif self.points["computer"] > self.points["user"]:
                 self.loser_sound.play()
+                self.user_choice_text.color = 1, 0, 0
+                self.computer_choice_text.color = 0, 1, 0
                 self.user_choice_text.text = "LOSER"
                 self.computer_choice_text.text = "WINNER"
             # Enable and show the 'Play again' button
