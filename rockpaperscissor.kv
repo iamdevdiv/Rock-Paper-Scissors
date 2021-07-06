@@ -1,4 +1,5 @@
 #:kivy 2.0.0
+#:import stopTouchApp kivy.base.stopTouchApp
 
 <MainMenu>:
     Widget:
@@ -75,7 +76,7 @@
             background_color: 92/255, 147/255, 237/255, 0.8
             size: root.width * .7, root.height * 0.08
             pos: root.center_x - self.width / 2, credits_button.pos[1] - self.height - dp(15)
-            on_release: root.quit_game()
+            on_release: stopTouchApp()
             on_press: root.click_sound.play()
 
 

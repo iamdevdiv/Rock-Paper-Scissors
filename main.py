@@ -10,6 +10,7 @@ from kivy.core.audio import SoundLoader, Sound
 from kivy.core.window import Window
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition, NoTransition
+from kivy.base import stopTouchApp
 
 # Sound and music related stuff
 Sound.volume = 1
@@ -32,10 +33,6 @@ cheats_screen = None  # for resetting cheats when user triple tap anywhere on 'M
 # First screen of game: Main Menu
 class MainMenu(Screen):
     click_sound = SoundLoader.load('Sounds/click.ogg')
-
-    @staticmethod
-    def quit_game():
-        RockPaperScissorApp().stop()
 
     # This method will toggle the music of the game.
     def toggle_music(self):
@@ -496,7 +493,7 @@ class RockPaperScissorApp(App):
             elif screen_manager.current == "Main Game":
                 main_game.show_exit_prompt()
             elif screen_manager.current == "Main Menu":
-                RockPaperScissorApp().stop()
+                stopTouchApp()
 
             return True
 
