@@ -19,7 +19,6 @@ bg_music = SoundLoader.load('Sounds/bg.ogg')
 bg_music.loop = True
 main_game_music = SoundLoader.load('Sounds/main_game.ogg')
 main_game_music.loop = True
-main_game_music.volume = 1
 
 
 # Global Variables
