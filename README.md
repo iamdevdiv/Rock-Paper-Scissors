@@ -15,7 +15,7 @@ So, get your fingers ready for the game!
 ## Installation 
 
 You can run this game on your android smartphone by downloading and installing its APK.  
-You can either download the APK from [Releases](https://github.com/devDiv629/Rock-Paper-Scissors/releases) or from this Google Drive link: https://drive.google.com/file/d/1VK6ZhfVoAO1nSFZp2f7iJHbbOKuZWBF-/view?usp=sharing
+You can download the APK either from [Releases](https://github.com/devDiv629/Rock-Paper-Scissors/releases) or from this Google Drive link: https://drive.google.com/file/d/1VK6ZhfVoAO1nSFZp2f7iJHbbOKuZWBF-/view?usp=sharing
 
 #### For PC
 This game is created mainly for android operating system, but you can also run this game on your PC. The only two requirements that you need are Python and Kivy (v2.0.0) installed on your PC.  
@@ -35,22 +35,23 @@ That's it! Enjoy the game.
 The assets of the game are provided by:
 
 #### Images
-Unsplash - www.unsplash.com
+Unsplash - https://www.unsplash.com
 
 #### Icons
-Kenney - www.kenney.nl  
-Freepik from www.flaticon.com  
-DinosoftLabs from www.flaticon.com
+Kenney - https://www.kenney.nl  
+Freepik from https://www.flaticon.com  
+DinosoftLabs from https://www.flaticon.com
 
 #### Sound Effects
-Kenney - www.kenney.nl  
+Kenney - https://www.kenney.nl  
 YouTube Audio Library
 
 #### Music
-www.zapsplat.com
+https://www.zapsplat.com
 
 #### Fonts
-www.fontspace.com
+https://www.fontspace.com  
+https://www.typedermicfonts.com
 
 ## Some More Fun
 You cannot cheat with your friends in Rock Paper Scissors when you play it face-to-face. But in this virtual game, you can! You can activate cheats in this game. The cheats are hidden, you can access them when the game is paused. After pausing the game, first triple tap/click on the very bottom of the screen/window rapidly. Then triple tap/click on the very top of the screen/window of game. This will reveal the cheats! Now, activate any cheat and make your friends fool ;-)  
