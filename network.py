@@ -8,7 +8,7 @@ class Network:
     def __init__(self, player_name: str):
         self.client = socket(AF_INET, SOCK_STREAM)
         self.server = ""
-        self.port = 
+        self.port = 0
         self.addr = (self.server, self.port)
 
         self.player_no = None
