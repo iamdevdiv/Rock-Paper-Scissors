@@ -1,5 +1,20 @@
 #:kivy 2.0.0
 #:import stopTouchApp kivy.base.stopTouchApp
+#:import Clock kivy.clock.Clock
+
+<LoadingScreen>:
+    Widget:
+        Image:
+            source: "atlas://images/loading"
+            size: root.size
+        Label:
+            text: "Loading..."
+            font_size: dp(30)
+            font_name: 'Fonts/cano.ttf'
+            color: 1, 1, 1
+            size: self.texture_size
+            pos: root.center_x - self.width / 2, self.height
+
 
 <MainMenu>:
     Widget:
@@ -8,7 +23,7 @@
             Rectangle:
                 size: self.size
                 pos: self.pos
-                source: 'atlas://Images/myatlas/bg'
+                source: 'atlas://images/bg'
 
     Widget:
         Button:
@@ -18,13 +33,13 @@
             on_release: root.toggle_music()
             Image:
                 id: audio_switch_btn
-                source: 'atlas://Images/myatlas/audio_on'
+                source: 'atlas://images/audio_on'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
     Widget:
         Image:
-            source: 'atlas://Images/myatlas/title'
+            source: 'atlas://images/title'
             size: root.width, root.height / 2.5
             pos: 0, root.height - self.height
 
@@ -38,8 +53,8 @@
             background_color: 92/255, 147/255, 237/255, 0.8
             size: root.width * .7, root.height * 0.08
             pos: root.center_x - self.width / 2, root.center_y - self.height / 2
-            on_press: root.click_sound.play()
-            on_release: root.add_screens()
+            on_press: app.click_sound.play()
+            on_release: root.manager.current = "Enter Name"
 
         Button:
             id: rules_button
@@ -51,8 +66,8 @@
             background_color: 92/255, 147/255, 237/255, 0.8
             size: root.width * .7, root.height * 0.08
             pos: root.center_x - self.width / 2, play_button.pos[1] - self.height - dp(15)
-            on_press: root.click_sound.play()
-            on_release: root.switch_to_rules()
+            on_press: app.click_sound.play()
+            on_release: root.manager.current = "Rules Screen"
 
         Button:
             id: credits_button
@@ -64,8 +79,8 @@
             background_color: 92/255, 147/255, 237/255, 0.8
             size: root.width * .7, root.height * 0.08
             pos: root.center_x - self.width / 2, rules_button.pos[1] - self.height - dp(15)
-            on_press: root.click_sound.play()
-            on_release: root.switch_to_credits()
+            on_press: app.click_sound.play()
+            on_release: root.manager.current = "Credits Screen"
 
         Button:
             text: 'Quit'
@@ -77,7 +92,7 @@
             size: root.width * .7, root.height * 0.08
             pos: root.center_x - self.width / 2, credits_button.pos[1] - self.height - dp(15)
             on_release: stopTouchApp()
-            on_press: root.click_sound.play()
+            on_press: app.click_sound.play()
 
 
 <EnterName>:
@@ -87,7 +102,7 @@
             Rectangle:
                 size: self.size
                 pos: self.pos
-                source: 'atlas://Images/myatlas/bg'
+                source: 'atlas://images/bg'
 
     Widget:
         Button:
@@ -95,19 +110,19 @@
             background_color: 0, 0, 0, 0
             pos: dp(10), root.height - self.height - dp(10)
             on_press:
-                root.click_sound.play()
+                app.click_sound.play()
                 self.opacity = 0.5
             on_touch_up: self.opacity = 1
             on_release: root.manager.current = 'Main Menu'
             Image:
-                source: 'atlas://Images/myatlas/back_button'
+                source: 'atlas://images/back_button'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
 
         Image:
             id: robot
-            source: 'atlas://Images/myatlas/ask_name'
+            source: 'atlas://images/ask_name'
             allow_stretch: True
             size: root.width, root.height / 3.5
             pos: root.center_x - self.width / 2, your_name.pos[1] + your_name.height + dp(30)
@@ -139,8 +154,8 @@
             on_text: root.validate_username()
 
         Button:
-            id: start_button
-            text: 'START'
+            id: next_button
+            text: 'Next'
             font_name: 'Fonts/moonhouse.ttf'
             font_size: dp(25)
             color: 4/255, 66/255, 33/255
@@ -148,12 +163,137 @@
             background_color: 92/255, 147/255, 237/255, 0.8
             size: root.width * 0.6, dp(40)
             pos: root.center_x - self.width / 2, root.center_y - self.height - dp(30)
+            on_press: app.click_sound.play()
             on_release:
-                root.begin_sound.play()
-                root.manager.current = 'Blank Screen'
-                root.begin_game()
+                root.validate_username()
+                root.manager.current = 'Select Mode'
 
-<MainGame>:
+<SelectMode>:
+    back_button: back_button
+    computer_mode: computer_mode
+    online_mode: online_mode
+    bg_image: bg_image
+    select_mode_text: select_mode_text
+    waiting_text: waiting_text
+    cancel_search_info: cancel_search_info
+    cancel_button: cancel_button
+    no_wifi_img: no_wifi_img
+
+    Widget:
+        id: bg_image
+        opacity: 0.8
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'atlas://images/bg'
+
+        Button:
+            id: cancel_button
+            background_color: 0, 0, 0, 0
+            size: root.width, root.height
+            disabled: True
+            on_release: if root.manager.current == "Select Mode": root.disconnect()
+
+    Widget:
+        Button:
+            id: back_button
+            size: dp(40), dp(40)
+            background_color: 0, 0, 0, 0
+            pos: dp(10), root.height - self.height - dp(10)
+            on_press:
+                if bg_image.opacity == 0.8: app.click_sound.play()
+                if bg_image.opacity == 0.8: self.opacity = 0.5
+            on_touch_up: if bg_image.opacity == 0.8: self.opacity = 1
+            on_release:
+                if bg_image.opacity == 0.8: root.manager.current = 'Enter Name'
+                elif root.manager.current == "Select Mode": root.disconnect()
+            Image:
+                source: 'atlas://images/back_button'
+                allow_stretch: True
+                size: self.parent.size
+                center: self.parent.center
+
+        Label:
+            id: select_mode_text
+            text: "Select Mode"
+            font_size: dp(35)
+            font_name: 'Fonts/polygon_party.ttf'
+            color: 0, 1, 0
+            size: self.texture_size
+            center_x: root.center_x
+            center_y: root.top - self.height * 2
+            on_size: self.center_x = root.center_x
+
+        Button:
+            id: computer_mode
+            size: dp(150), dp(150)
+            background_color: 0, 0, 0, 0
+            pos: root.center_x - self.width / 2, root.center_y + (self.height / 10)
+            on_press:
+                if self.opacity != 0.2: app.click_sound.play()
+                if self.opacity != 0.2: self.opacity = 0.5
+            on_touch_up: if self.opacity != 0.2 and bg_image.opacity == 0.8: self.opacity = 1
+            on_release:
+                if bg_image.opacity == 0.8: app.begin_sound.play()
+                if bg_image.opacity == 0.8: root.begin_game("Computer Game")
+                elif root.manager.current == "Select Mode": root.disconnect()
+            Image:
+                source: 'atlas://images/computer'
+                allow_stretch: True
+                size: self.parent.size
+                center: self.parent.center
+
+        Button:
+            id: online_mode
+            size: dp(150), dp(150)
+            background_color: 0, 0, 0, 0
+            pos: root.center_x - self.width / 2, root.center_y - self.height * 1.5
+            on_press:
+                if self.opacity != 0.2: app.click_sound.play()
+                if self.opacity != 0.2: self.opacity = 0.5
+            on_touch_up: if self.opacity != 0.2 and bg_image.opacity == 0.8: self.opacity = 1
+            on_release:
+#                if bg_image.opacity == 0.8: Clock.schedule_once(root.connect, 1)
+                if bg_image.opacity == 0.8: root.connect()
+                if bg_image.opacity == 0.8: root.dim_the_background()
+                elif root.manager.current == "Select Mode": root.disconnect()
+            Image:
+                source: 'atlas://images/internet'
+                allow_stretch: True
+                size: self.parent.size
+                center: self.parent.center
+
+        Label:
+            id: waiting_text
+            text: "Connecting to server..."
+            font_size: dp(20)
+            font_name: 'Fonts/cano.ttf'
+            color: 1, 1, 1
+            opacity: 0
+            pos: root.center_x - self.width / 2, root.center_y
+
+        Label:
+            id: cancel_search_info
+            text: "(Touch anywhere to CANCEL)"
+            font_size: dp(16)
+            font_name: 'Fonts/cano.ttf'
+            color: 1, 1, 1
+            opacity: 0
+            pos: root.center_x - self.width / 2, waiting_text.pos[1] - self.height / 2
+
+        Image:
+            id: no_wifi_img
+            source: "atlas://images/no_wifi"
+            center_x: root.center_x
+            center_y: waiting_text.pos[1] - self.height / 2
+            size_hint: None, None
+            width: dp(100)
+            height: dp(100)
+            allow_stretch: True
+            opacity: 0
+
+<ComputerGame>:
     message: message
     round_on_screen: round_number
     user_name: user_name
@@ -173,7 +313,7 @@
             Rectangle:
                 size: self.size
                 pos: self.pos
-                source: 'atlas://Images/myatlas/bg'
+                source: 'atlas://images/bg'
 
         Button:
             background_color: 0, 0, 0, 0
@@ -187,12 +327,12 @@
             background_color: 0, 0, 0, 0
             pos: dp(10), root.height - self.height - dp(10)
             on_press:
-                if self.opacity != 0.4: root.click_sound.play()
+                if self.opacity != 0.4: app.click_sound.play()
                 if self.opacity != 0.4: self.opacity = 0.5
             on_touch_up: if self.opacity != 0.4: self.opacity = 1
             on_release: root.show_exit_prompt()
             Image:
-                source: 'atlas://Images/myatlas/exit'
+                source: 'atlas://images/exit'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
@@ -206,7 +346,7 @@
             on_touch_up: if self.opacity != 0.4: self.opacity = 1
             on_release: root.pause_game()
             Image:
-                source: 'atlas://Images/myatlas/pause'
+                source: 'atlas://images/pause'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
@@ -253,8 +393,8 @@
             center_x: root.width / 4
             center_y: user_points.pos[1] - self.height
             color: 203/255, 158/255, 249/255
-            font_size: dp(22)
-            font_name: "Fonts/gratison.otf"
+            font_size: dp(30)
+            font_name: "Fonts/mango_scribble.otf"
 
         Label:
             id: computer_name
@@ -285,8 +425,8 @@
             center_y: computer_points.pos[1] - self.height
             on_size: self.center_x = root.width * 3 / 4
             color: 203/255, 158/255, 249/255
-            font_size: dp(22)
-            font_name: "Fonts/gratison.otf"
+            font_size: dp(30)
+            font_name: "Fonts/mango_scribble.otf"
 
         Button:
             id: select_rock
@@ -299,10 +439,10 @@
             on_touch_up: if self.opacity == 0.5: self.opacity = 1
             on_release:
                 if root.game_playable == True: root.rock_clicked_sound.play()
-                if root.game_playable == True: root.toggle_buttons_state()
+                if root.game_playable == True: root.disable_buttons()
                 if root.game_playable == True: root.compare_choices(1)
             Image:
-                source: 'atlas://Images/myatlas/rock'
+                source: 'atlas://images/rock'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
@@ -319,10 +459,10 @@
             on_touch_up: if self.opacity == 0.5: self.opacity = 1
             on_release:
                 if root.game_playable == True: root.paper_clicked_sound.play()
-                if root.game_playable == True: root.toggle_buttons_state()
+                if root.game_playable == True: root.disable_buttons()
                 if root.game_playable == True: root.compare_choices(2)
             Image:
-                source: 'atlas://Images/myatlas/paper'
+                source: 'atlas://images/paper'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
@@ -339,10 +479,10 @@
             on_touch_up: if self.opacity == 0.5: self.opacity = 1
             on_release:
                 if root.game_playable == True: root.scissor_clicked_sound.play()
-                if root.game_playable == True: root.toggle_buttons_state()
+                if root.game_playable == True: root.disable_buttons()
                 if root.game_playable == True: root.compare_choices(3)
             Image:
-                source: 'atlas://Images/myatlas/scissor'
+                source: 'atlas://images/scissor'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
@@ -361,7 +501,7 @@
             disabled: True
             size: root.width * 0.9, dp(40)
             center_x: root.center_x
-            center_y: message.pos[1]
+            center_y: self.height
             on_size: self.center_x = root.center_x
             background_normal: ''
             font_name: 'Fonts/moonhouse.ttf'
@@ -369,6 +509,7 @@
             font_size: dp(30)
             background_color: 92/255, 147/255, 237/255
             opacity: 0
+            on_press: if root.game_playable == True: app.click_sound.play()
             on_release: if root.game_playable: root.play_again()
 
 <ExitPrompt>:
@@ -399,7 +540,7 @@
             background_color: 92/255, 147/255, 237/255, 0.8
             color: 4/255, 66/255, 33/255
             font_name: 'Fonts/moonhouse.ttf'
-            on_press: root.click_sound.play()
+            on_press: app.click_sound.play()
             on_release: root.remove_prompt()
 
         Button:
@@ -411,7 +552,7 @@
             background_color: 92/255, 147/255, 237/255, 0.8
             color: 4/255, 66/255, 33/255
             font_name: 'Fonts/moonhouse.ttf'
-            on_press: root.click_sound.play()
+            on_press: app.click_sound.play()
             on_release: root.go_to_main_menu()
 
 <PauseScreen>:
@@ -464,7 +605,7 @@
             on_touch_up: self.opacity = 1
             on_release: root.manager.current = 'Pause Screen'
             Image:
-                source: 'atlas://Images/myatlas/back_button'
+                source: 'atlas://images/back_button'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
@@ -505,13 +646,270 @@
             on_press: root.toggle_cheats()
 
         Label:
-            text: "When it's your turn, triple tap anywhere to reset the cheats"
+            text: "Triple tap anywhere on the game screen to turn off the cheats"
             color: 1, 1, 0
             text_size: root.width * 0.9, None
             font_name: 'Fonts/cano.ttf'
             center_x: root.center_x
             center_y: dp(self.height)
             halign: 'center'
+
+<OnlineGame>:
+    round_on_screen: round_number
+    user_name: user_name
+    user_points: user_points
+    user_choice_text: user_choice_text
+    opponent_name: opponent_name
+    opponent_points: opponent_points
+    opponent_choice_text: opponent_choice_text
+    select_rock: select_rock
+    select_paper: select_paper
+    select_scissor: select_scissor
+    message: message
+    play_again_button: play_again
+
+    Widget:
+        id: background_image
+        opacity: 0.8
+        canvas.before:
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'atlas://images/bg'
+
+    Widget:
+        Button:
+            id: switch_to_home
+            size: dp(40), dp(40)
+            background_color: 0, 0, 0, 0
+            pos: dp(10), root.height - self.height - dp(10)
+            on_press:
+                if self.opacity != 0.4: app.click_sound.play()
+                if self.opacity != 0.4: self.opacity = 0.5
+            on_touch_up: if self.opacity != 0.4: self.opacity = 1
+            on_release: root.show_prompt("exit")
+            Image:
+                source: 'atlas://images/exit'
+                allow_stretch: True
+                size: self.parent.size
+                center: self.parent.center
+
+    Widget:
+        id: game_actions
+        Label:
+            id: round_number
+            text: 'ROUND 1'
+            font_name: 'Fonts/evil_empire.ttf'
+            color: 1, 1, 0
+            opacity: 0
+            size: self.texture_size
+            font_size: dp(35)
+            center_x: root.center_x
+            center_y: root.top - self.height * 2
+            on_size: self.center_x = root.center_x
+
+        Label:
+            id: user_name
+            size: self.texture_size
+            center_x: root.width / 4
+            center_y: round_number.pos[1] - dp(self.height)
+            on_size: self.center_x = root.width / 4
+            color: 115/255, 247/255, 214/255
+            font_size: dp(22)
+            font_name: "Fonts/buggie.ttf"
+
+        Label:
+            id: user_points
+            text: "0"
+            size: self.texture_size
+            center_x: root.width / 4
+            center_y: user_name.pos[1] - self.height
+            on_size: self.center_x = root.width / 4
+            color: 239/255, 196/255, 59/255
+            font_size: dp(25)
+            font_name: "Fonts/buggie.ttf"
+
+        Label:
+            id: user_choice_text
+            text: "Waiting"
+            size: self.texture_size
+            on_size: self.center_x = root.width / 4
+            center_x: root.width / 4
+            center_y: user_points.pos[1] - self.height
+            color: 203/255, 158/255, 249/255
+            font_size: dp(30)
+            font_name: "Fonts/mango_scribble.otf"
+
+        Label:
+            id: opponent_name
+            text: "Computer"
+            size: self.texture_size
+            center_x: root.width * 3 / 4
+            center_y: round_number.pos[1] - dp(self.height)
+            on_size: self.center_x = root.width * 3 / 4
+            color: 115/255, 247/255, 214/255
+            font_size: dp(22)
+            font_name: "Fonts/buggie.ttf"
+
+        Label:
+            id: opponent_points
+            text: "0"
+            size: self.texture_size
+            center_x: root.width * 3 / 4
+            center_y: opponent_name.pos[1] - self.height
+            on_size: self.center_x = root.width * 3 / 4
+            color: 239/255, 196/255, 59/255
+            font_size: dp(25)
+            font_name: "Fonts/buggie.ttf"
+
+        Label:
+            id: opponent_choice_text
+            text: "Waiting"
+            size: self.texture_size
+            center_x: root.width * 3 / 4
+            center_y: opponent_points.pos[1] - self.height
+            on_size: self.center_x = root.width * 3 / 4
+            color: 203/255, 158/255, 249/255
+            font_size: dp(30)
+            font_name: "Fonts/mango_scribble.otf"
+
+        Button:
+            id: select_rock
+            background_color: 0, 0, 0, 0
+            size: dp(60), dp(60)
+            center: root.center
+            disabled: True
+            opacity: 0.7
+            on_press: if root.game_playable == True: self.opacity = 0.5
+            on_touch_up: if self.opacity == 0.5: self.opacity = 1
+            on_release:
+                if root.game_playable == True: root.rock_clicked_sound.play()
+                if root.game_playable == True: root.disable_buttons()
+                if root.game_playable == True: root.network.send("Rock")
+            Image:
+                source: 'atlas://images/rock'
+                allow_stretch: True
+                size: self.parent.size
+                center: self.parent.center
+
+        Button:
+            id: select_paper
+            background_color: 0, 0, 0, 0
+            size: dp(60), dp(60)
+            center_x: root.width / 4
+            center_y: select_rock.pos[1] - self.height
+            disabled: True
+            opacity: 0.7
+            on_press: if root.game_playable == True: self.opacity = 0.5
+            on_touch_up: if self.opacity == 0.5: self.opacity = 1
+            on_release:
+                if root.game_playable == True: root.paper_clicked_sound.play()
+                if root.game_playable == True: root.disable_buttons()
+                if root.game_playable == True: root.network.send("Paper")
+            Image:
+                source: 'atlas://images/paper'
+                allow_stretch: True
+                size: self.parent.size
+                center: self.parent.center
+
+        Button:
+            id: select_scissor
+            background_color: 0, 0, 0, 0
+            size: dp(60), dp(60)
+            center_x: root.width * 3 / 4
+            center_y: select_rock.pos[1] - self.height
+            disabled: True
+            opacity: 0.7
+            on_press: if root.game_playable == True: self.opacity = 0.5
+            on_touch_up: if self.opacity == 0.5: self.opacity = 1
+            on_release:
+                if root.game_playable == True: root.scissor_clicked_sound.play()
+                if root.game_playable == True: root.disable_buttons()
+                if root.game_playable == True: root.network.send("Scissor")
+            Image:
+                source: 'atlas://images/scissor'
+                allow_stretch: True
+                size: self.parent.size
+                center: self.parent.center
+
+        Label:
+            id: message
+            font_size: dp(22)
+            font_name: "Fonts/cano.ttf"
+            center_x: root.center_x
+            center_y: select_paper.pos[1] - dp(self.height) / 2
+
+        Button:
+            id: play_again
+            text: "Play again"
+            disabled: True
+            size: root.width * 0.9, dp(40)
+            center_x: root.center_x
+            center_y: self.height
+            on_size: self.center_x = root.center_x
+            background_normal: ''
+            font_name: 'Fonts/moonhouse.ttf'
+            color: 4/255, 66/255, 33/255
+            font_size: dp(30)
+            background_color: 92/255, 147/255, 237/255
+            opacity: 0
+            on_press: if root.game_playable and self.text == "Play again" == True: app.click_sound.play()
+            on_release:
+                if root.game_playable == True and self.text == "Play again": self.disabled = True
+                if root.game_playable == True and self.text == "Play again": root.network.send("again")
+                if root.game_playable == True and self.text == "Play again": self.text = "Request sent..."
+
+<PlayAgainPrompt>:
+    request_msg: request_msg
+
+    Widget:
+        id: play_again_prompt_background
+        canvas:
+            Color:
+                rgba: 1, 1, 1, 0.8
+            Rectangle:
+                pos: self.center_x - (root.width * 0.8) / 2, self.center_y - (root.height / 4) / 2
+                size: root.width * 0.8, root.height / 4
+
+        Label:
+            id: request_msg
+            color: 222/255, 47/255, 99/255
+            font_name: 'Fonts/polygon_party.ttf'
+            font_size: root.height * 0.04
+            center_x: root.center_x
+            center_y: decline.pos[1] + decline.height * 1.7
+            size_hint_y: None
+            text_size: root.width * 0.8, None
+            halign: 'center'
+            height: self.texture_size[1]
+            padding: 10, 10
+
+        Button:
+            id: decline
+            text: 'Decline'
+            size: root.width / 4, root.height / 12
+            font_size: root.width / 18
+            center_x: play_again_prompt_background.center_x - self.width * 0.8
+            center_y: play_again_prompt_background.center_y - self.height / 2
+            background_normal: ''
+            background_color: 92/255, 147/255, 237/255, 0.8
+            color: 4/255, 66/255, 33/255
+            font_name: 'Fonts/moonhouse.ttf'
+            on_press: app.click_sound.play()
+            on_release: root.decline_request()
+
+        Button:
+            text: 'Accept'
+            size: root.width / 4, root.height / 12
+            font_size: root.width / 18
+            center_x: play_again_prompt_background.center_x + self.width * 0.8
+            center_y: play_again_prompt_background.center_y - self.height / 2
+            background_normal: ''
+            background_color: 92/255, 147/255, 237/255, 0.8
+            color: 4/255, 66/255, 33/255
+            font_name: 'Fonts/moonhouse.ttf'
+            on_press: app.click_sound.play()
+            on_release: root.accept_request()
 
 <SpecialLabel@Label>:
     size_hint_y: None
@@ -529,7 +927,7 @@
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "Rock-Paper-Scissors is played between two or more players. But in this virtual game, there will be only two players - First one is [color=f2aa9b]YOU[/color] and second one is [color=f2aa9b]COMPUTER[/color]."
+        text: "Rock Paper Scissors is played between two or more players. But in this virtual game, there will be only two players - [color=f2aa9b]YOU[/color] and your only [color=f2aa9b]OPPONENT[/color]."
         font_name: "Fonts/cano.ttf"
 
     SpecialLabel:
@@ -539,7 +937,7 @@
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "As given in the title of the game, players have to choose one of the three choices - [color=f2aa9b]ROCK[/color] or [color=f2aa9b]PAPER[/color] or [color=f2aa9b]SCISSOR[/color]. There would be six rounds in the game. The first turn would be yours, and then that of the computer. Don't worry, computer's choice would be random. The choices of both the players would be checked and winner would be decided on these conditions:"
+        text: "As given in the title of the game, players have to choose one of the three choices - [color=f2aa9b]ROCK[/color] or [color=f2aa9b]PAPER[/color] or [color=f2aa9b]SCISSOR[/color]. There will be six rounds in the game. You and your opponent will have to select your moves. In computer, mode, first turn will be yours and don't worry, computer's move will be random. The moves of both the players will be checked and winner will be decided on these conditions:"
         font_name: "Fonts/cano.ttf"
 
     SpecialLabel:
@@ -548,17 +946,17 @@
         halign: "left"
 
     SpecialLabel:
-        text: "So, if you choose [color=f2aa9b]PAPER[/color] and the computer chooses [color=f2aa9b]ROCK[/color], then you will win the round. In contrast, if you choose [color=f2aa9b]ROCK[/color] and the computer chooses [color=f2aa9b]PAPER[/color], then you will lose the round. If the choices of both the players are the same, then it would be a [color=f2aa9b]TIE[/color]. The player who wins the round would get one point. If a tie occurs, no one would get a point and the round would be played again.\nAfter final round, the player who has more points would win the game. If both players score the same points, a [color=f2aa9b]TIEBREAKER[/color] round will be played. The player who would win this round will be the winner of the game."
+        text: "So, if you select [color=f2aa9b]PAPER[/color] and your opponent selects [color=f2aa9b]ROCK[/color], then you will win the round. In contrast, if you select [color=f2aa9b]ROCK[/color] and your opponent selects [color=f2aa9b]PAPER[/color], then you will lose the round. If moves of both the players are same, then it will be a [color=f2aa9b]TIE[/color]. The player who wins a round will get one point. On draw, no one will get a point and the round will be played again.\nAfter final round, the player who has more points will win the game. If both players have equal points, a [color=f2aa9b]TIEBREAKER[/color] round will be played. The player who will win this round will be the winner of the game."
         font_name: "Fonts/cano.ttf"
 
     SpecialLabel:
-        text: "SECRET"
+        text: "CHEATS"
         color: 0, 1, 0
         font_size: dp(18)
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "You cannot cheat with your friends in Rock-Paper-Scissors when you play it face-to-face, but in this virtual game, you can. Something is hidden on the [color=f2aa9b]Pause[/color] screen!!"
+        text: "Triple tap first on the very bottom and then the very top of the pause screen to access the cheats.\nCheats are not available for online mode."
         font_name: "Fonts/cano.ttf"
 
 <RulesScreen>:
@@ -567,19 +965,19 @@
             Rectangle:
                 size: self.size
                 pos: self.pos
-                source: 'atlas://Images/myatlas/bg_2'
+                source: 'atlas://images/bg_2'
 
         Button:
             size: dp(40), dp(40)
             background_color: 0, 0, 0, 0
             pos: dp(10), root.height - self.height - dp(10)
             on_press:
-                root.click_sound.play()
+                app.click_sound.play()
                 self.opacity = 0.5
             on_touch_up: self.opacity = 1
             on_release: root.manager.current = 'Main Menu'
             Image:
-                source: 'atlas://Images/myatlas/back_button'
+                source: 'atlas://images/back_button'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
@@ -618,7 +1016,7 @@
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "Unsplash - www.unsplash.com"
+        text: "Unsplash - https://www.unsplash.com"
         font_name: "Fonts/cano.ttf"
 
     SpecialLabel:
@@ -628,7 +1026,7 @@
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "Kenney - www.kenney.nl\nIcon made by Freepik from www.flaticon.com\nIcon made by DinosoftLabs from www.flaticon.com"
+        text: "Kenney - https://www.kenney.nl\nIcon made by Freepik from https://www.flaticon.com\nIcon made by DinosoftLabs from https://www.flaticon.com"
         font_name: "Fonts/cano.ttf"
 
     SpecialLabel:
@@ -638,7 +1036,7 @@
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "Kenney - www.kenney.nl\nYouTube Audio Library"
+        text: "Kenney - https://www.kenney.nl\nYouTube Audio Library"
         font_name: "Fonts/cano.ttf"
 
     SpecialLabel:
@@ -648,7 +1046,7 @@
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "www.zapsplat.com"
+        text: "https://www.zapsplat.com"
         font_name: "Fonts/cano.ttf"
 
     SpecialLabel:
@@ -658,7 +1056,7 @@
         font_name: 'Fonts/polygon_party.ttf'
 
     SpecialLabel:
-        text: "www.fontspace.com"
+        text: "https://www.fontspace.com\nhttps://www.typodermicfonts.com"
         font_name: "Fonts/cano.ttf"
 
 <CreditsScreen>:
@@ -667,19 +1065,19 @@
             Rectangle:
                 size: self.size
                 pos: self.pos
-                source: 'atlas://Images/myatlas/bg_2'
+                source: 'atlas://images/bg_2'
 
         Button:
             size: dp(40), dp(40)
             background_color: 0, 0, 0, 0
             pos: dp(10), root.height - self.height - dp(10)
             on_press:
-                root.click_sound.play()
+                app.click_sound.play()
                 self.opacity = 0.5
             on_touch_up: self.opacity = 1
             on_release: root.manager.current = 'Main Menu'
             Image:
-                source: 'atlas://Images/myatlas/back_button'
+                source: 'atlas://images/back_button'
                 allow_stretch: True
                 size: self.parent.size
                 center: self.parent.center
