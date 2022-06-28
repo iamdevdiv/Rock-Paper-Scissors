@@ -5,7 +5,7 @@ from _thread import start_new_thread
 from socket import socket, AF_INET, SOCK_STREAM, error as socket_error
 
 server = ""  # IP address
-port =   # ufw allow <port>
+port = 0  # ufw allow <port>
 
 s = socket(AF_INET, SOCK_STREAM)
 
