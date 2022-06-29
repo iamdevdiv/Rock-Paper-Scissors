@@ -37,7 +37,6 @@ class LoadingScreen(Screen):
         # was waiting for the loading to be completed, go to main menu and start background music
         if not self.app.loading_thread.is_alive():
             self.wait_for_loading_completion.cancel()
-            screen_manager.add_widget(MainMenu())
             screen_manager.current = "Main Menu"
             screen_manager.transition = WipeTransition()
             self.app.bg_music.play()
@@ -196,7 +195,7 @@ class SelectMode(Screen):
                     self.wait_for_player_event()
                     game = self.network.send("get")
                     screen_manager.add_widget(OnlineGame(self.network, int(self.network.get_player_no()), game))
-            return False  # stop scheduled interval (line 188)
+            return False  # stop scheduled interval (line 182)
 
     def disconnect(self, lit=True) -> None:
         self.wait_for_player_event.cancel()
@@ -676,7 +675,7 @@ class OnlineGame(Screen):
                     not self.game.play_again[self.player_no] and self.game.connected():
                 self.play_again_button.font_size = dp(25)
                 self.play_again_button.text = "Request declined !"
-                # Button still won't work until its text is not set to "Play again" (line 684)
+                # Button still won't work until its text is not set to "Play again" (line 682)
                 self.play_again_button.disabled = False
                 self.play_again_button.background_down = ""
                 if exit_time_left > 10:
@@ -746,7 +745,8 @@ class OnlineGame(Screen):
             if self.game.connected():
                 self.user_choice_text.color = 203/255, 158/255, 249/255
                 self.opponent_choice_text.color = 203/255, 158/255, 249/255
-                self.round_on_screen.opacity = 1  # change the opacity of round number to 1 which is 0 when the game starts
+                # change the opacity of round number to 1 which is 0 when the game starts
+                self.round_on_screen.opacity = 1
                 if self.game.current_round < 6:
                     self.round_on_screen.text = f"ROUND {self.game.current_round}"
                 elif self.game.current_round == 6:
@@ -787,10 +787,9 @@ class OnlineGame(Screen):
             # Play sound effect of current round and set the text of round in game
             Clock.schedule_once(self.play_round_sound, 2)
             Clock.schedule_once(self.set_round_text, 2)
-            # Enable the buttons
-            Clock.schedule_once(self.enable_buttons, 2)
-            Clock.schedule_once(partial(self.network.send, "reset"), 2)
-            Clock.schedule_once(self.check_winner_event, 2)
+
+            Clock.schedule_once(partial(self.network.send, "reset"), 2)  # send reset request to the server
+            Clock.schedule_once(self.check_winner_event, 2)  # start checking for winner
         else:  # After the sixth round or tiebreaker round, tell the user who is the winner
             if self.game.points[self.player_no] > self.game.points[1 - self.player_no]:
                 Clock.schedule_once(partial(self.show_result, self.user_choice_text, self.opponent_choice_text,
@@ -812,19 +811,19 @@ class OnlineGame(Screen):
 
             # If both players have selected their move, determine the winner
             if self.game.both_went() and self.game.connected():
+                self.disable_buttons()
+
                 self.user_choice_text.text = my_move
                 self.opponent_choice_text.text = opponent_move
 
                 winner = self.game.get_winner()
                 if winner is None:
-                    self.disable_buttons()
                     self.user_choice_text.color = self.opponent_choice_text.color = 1, 0, 0
                     self.user_choice_text.text = self.opponent_choice_text.text = "Timeout"
                     self.check_winner_event.cancel()
                     Clock.schedule_once(partial(self.disconnect, "Select Mode"), 3)
                     return
                 elif winner == 0:
-                    self.disable_buttons()
                     if self.player_no == 0:
                         self.show_result(self.user_choice_text, self.opponent_choice_text, self.you_win_sound, False)
                         self.user_points.text = str(self.game.points[self.player_no])
@@ -832,7 +831,6 @@ class OnlineGame(Screen):
                         self.show_result(self.opponent_choice_text, self.user_choice_text, self.you_lose_sound, False)
                         self.opponent_points.text = str(self.game.points[1 - self.player_no])
                 elif winner == 1:
-                    self.disable_buttons()
                     if self.player_no == 1:
                         self.show_result(self.user_choice_text, self.opponent_choice_text, self.you_win_sound, False)
                         self.user_points.text = str(self.game.points[self.player_no])
@@ -852,6 +850,8 @@ class OnlineGame(Screen):
                     self.user_choice_text.text = my_move
                 else:
                     self.user_choice_text.text = f"Waiting... {self.game.time_left[self.player_no]}"
+                    if "down" not in [self.select_rock.state, self.select_paper.state, self.select_scissor.state]:
+                        self.enable_buttons()
 
                 if self.game.players_went[1 - self.player_no]:
                     self.opponent_choice_text.text = "Locked in"
@@ -959,7 +959,7 @@ class RockPaperScissorApp(App):
 
             return True
 
-    def on_start(self) -> None:
+    def on_start(self) -> None:  # start loading thread
         self.loading_thread.start()
         screen_manager.get_screen("Loading Screen").wait_for_loading_completion()
 
@@ -968,7 +968,13 @@ class RockPaperScissorApp(App):
             screen_manager.get_screen("Computer Game").pause_game()
         return True
 
-    def load(self) -> None:
+    def load(self) -> None:  # this method will be executed in another thread while loading screen is shown
+        self.bg_music = SoundLoader.load("Sounds/bg.ogg")
+        self.bg_music.loop = True
+        self.main_game_music = SoundLoader.load("Sounds/main_game.ogg")
+        self.main_game_music.loop = True
+
+        screen_manager.add_widget(MainMenu())
         screen_manager.add_widget(RulesScreen())
         screen_manager.add_widget(CreditsScreen())
         screen_manager.add_widget(ComputerGame())
@@ -976,11 +982,6 @@ class RockPaperScissorApp(App):
         screen_manager.add_widget(SelectMode())
         screen_manager.add_widget(PauseScreen())
         screen_manager.add_widget(CheatsScreen())
-
-        self.bg_music = SoundLoader.load("Sounds/bg.ogg")
-        self.bg_music.loop = True
-        self.main_game_music = SoundLoader.load("Sounds/main_game.ogg")
-        self.main_game_music.loop = True
 
     def build(self) -> ScreenManager:
         screen_manager.add_widget(LoadingScreen())

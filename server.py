@@ -67,8 +67,13 @@ def threaded_client(conn: socket, player_no: int, key: int) -> None:
                 if game.start_time is not None and game.completed is False:
                     if game.moves[0] == "":  # stop the timer when the player selects his/her move
                         game.time_left[0] = 15 - int(time() - game.start_time)
+                        if game.time_left[0] < 0:
+                            disconnection_aftermath(game, key, 0, conn)
+
                     if game.moves[1] == "":
                         game.time_left[1] = 15 - int(time() - game.start_time)
+                        if game.time_left[1] < 0:
+                            disconnection_aftermath(game, key, 1, conn)
 
                 # Set start_time after completion of all the rounds for the exit timer
                 # CONDITIONS:
@@ -91,7 +96,7 @@ def threaded_client(conn: socket, player_no: int, key: int) -> None:
 
                 # Game will start when both players connect hence the value of the 'started' property
                 # It will be used to decrement the value of game_id if the second player of a game disconnects
-                # immediately after connecting and the game didn't start (line 138)
+                # immediately after connecting and the game didn't start (line 143)
                 if game.started is False and game.connected():
                     game.started = True
         except ConnectionResetError:  # when the game is closed forcefully
@@ -133,7 +138,7 @@ def disconnection_aftermath(game: MainGame, key: int, player_no: int, conn: sock
 
     # If player 1 is connected to a game waiting for his/her opponent, and player 2 connects and disconnects
     # immediately before the game is started, decrement game_id and set match_made to [True, False] which got reset to
-    # [False, False] when the opponent player connected (line 166)
+    # [False, False] when the opponent player connected (line 171)
     # This helps player 1 to find his/her opponent for his/her game_id without searching for player again
     if game.ready == [True, False] and game.started is False:
         global game_id
