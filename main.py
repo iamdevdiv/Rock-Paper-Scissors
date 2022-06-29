@@ -37,6 +37,16 @@ class LoadingScreen(Screen):
         # was waiting for the loading to be completed, go to main menu and start background music
         if not self.app.loading_thread.is_alive():
             self.wait_for_loading_completion.cancel()
+
+            screen_manager.remove_widget(screen_manager.get_screen("Computer Game"))  # remove temporary addition...
+            screen_manager.add_widget(ComputerGame())  # ...and add again
+            screen_manager.add_widget(RulesScreen())
+            screen_manager.add_widget(CreditsScreen())
+            screen_manager.add_widget(EnterName())
+            screen_manager.add_widget(SelectMode())
+            screen_manager.add_widget(PauseScreen())
+            screen_manager.add_widget(CheatsScreen())
+
             screen_manager.current = "Main Menu"
             screen_manager.transition = WipeTransition()
             self.app.bg_music.play()
@@ -195,7 +205,7 @@ class SelectMode(Screen):
                     self.wait_for_player_event()
                     game = self.network.send("get")
                     screen_manager.add_widget(OnlineGame(self.network, int(self.network.get_player_no()), game))
-            return False  # stop scheduled interval (line 182)
+            return False  # stop scheduled interval (line 192)
 
     def disconnect(self, lit=True) -> None:
         self.wait_for_player_event.cancel()
@@ -675,7 +685,7 @@ class OnlineGame(Screen):
                     not self.game.play_again[self.player_no] and self.game.connected():
                 self.play_again_button.font_size = dp(25)
                 self.play_again_button.text = "Request declined !"
-                # Button still won't work until its text is not set to "Play again" (line 682)
+                # Button still won't work until its text is not set to "Play again" (line 692)
                 self.play_again_button.disabled = False
                 self.play_again_button.background_down = ""
                 if exit_time_left > 10:
@@ -969,22 +979,16 @@ class RockPaperScissorApp(App):
         return True
 
     def load(self) -> None:  # this method will be executed in another thread while loading screen is shown
+        screen_manager.add_widget(ComputerGame())  # temporary addition
+
         self.bg_music = SoundLoader.load("Sounds/bg.ogg")
         self.bg_music.loop = True
         self.main_game_music = SoundLoader.load("Sounds/main_game.ogg")
         self.main_game_music.loop = True
 
-        screen_manager.add_widget(MainMenu())
-        screen_manager.add_widget(RulesScreen())
-        screen_manager.add_widget(CreditsScreen())
-        screen_manager.add_widget(ComputerGame())
-        screen_manager.add_widget(EnterName())
-        screen_manager.add_widget(SelectMode())
-        screen_manager.add_widget(PauseScreen())
-        screen_manager.add_widget(CheatsScreen())
-
     def build(self) -> ScreenManager:
         screen_manager.add_widget(LoadingScreen())
+        screen_manager.add_widget(MainMenu())
         return screen_manager
 
 
