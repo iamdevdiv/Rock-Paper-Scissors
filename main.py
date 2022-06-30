@@ -38,8 +38,8 @@ class LoadingScreen(Screen):
         if not self.app.loading_thread.is_alive():
             self.wait_for_loading_completion.cancel()
 
-            screen_manager.remove_widget(screen_manager.get_screen("Computer Game"))  # remove temporary addition...
-            screen_manager.add_widget(ComputerGame())  # ...and add again
+            screen_manager.remove_widget(screen_manager.get_screen("Computer Game"))
+            screen_manager.add_widget(ComputerGame())
             screen_manager.add_widget(RulesScreen())
             screen_manager.add_widget(CreditsScreen())
             screen_manager.add_widget(EnterName())
@@ -148,7 +148,7 @@ class SelectMode(Screen):
     def lit_the_background(self, delta_time=0) -> None:
         # If player has started searching again for an opponent after cancelling previous search or if one was not found
         # in previous search, then prevent lighting background by the scheduled lighting function
-        if "Waiting" not in self.waiting_text.text or "Connecting" not in self.waiting_text.text:
+        if ("Waiting" not in self.waiting_text.text and "Connecting" not in self.waiting_text.text) or delta_time == 0:
             self.time_left = 31
 
             self.back_button.opacity = 1
@@ -184,7 +184,7 @@ class SelectMode(Screen):
             self.disconnect(False)
         elif screen_manager.current == "Online Game":  # opponent is found, so stop setting waiting text
             self.wait_for_player_event.cancel()
-            Clock.schedule_once(self.lit_the_background, 3)
+            self.lit_the_background()
 
     def connect(self, delta_time=0) -> None:
         global name_of_user
@@ -979,7 +979,7 @@ class RockPaperScissorApp(App):
         return True
 
     def load(self) -> None:  # this method will be executed in another thread while loading screen is shown
-        screen_manager.add_widget(ComputerGame())  # temporary addition
+        screen_manager.add_widget(ComputerGame())
 
         self.bg_music = SoundLoader.load("Sounds/bg.ogg")
         self.bg_music.loop = True
