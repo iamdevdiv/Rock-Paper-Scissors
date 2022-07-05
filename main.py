@@ -3,7 +3,6 @@
 
 # Imports
 from network import Network
-from threading import Thread
 from functools import partial
 from random import choice as choose_randomly
 
@@ -24,7 +23,7 @@ name_of_user = ""
 
 
 # Loading screen is mainly made for Android where it will be shown while widgets and music of game is being
-# loaded on background using another thread
+# loaded on background
 class LoadingScreen(Screen):
     def __init__(self) -> None:
         super(LoadingScreen, self).__init__(name="Loading Screen")
@@ -34,8 +33,7 @@ class LoadingScreen(Screen):
         self.wait_for_loading_completion = Clock.create_trigger(self.wait_for_music, 1, True)
 
     def wait_for_music(self, delta_time=0) -> None:
-        # Thread is not alive means loading of all the widgets and music is completed, so cancel the thread which
-        # was waiting for the loading to be completed, go to main menu and start background music
+        # When loading of all the widgets and music is completed, go to main menu and start background music
         if self.app.loading_completed:
             self.wait_for_loading_completion.cancel()
             screen_manager.current = "Main Menu"
@@ -960,7 +958,7 @@ class RockPaperScissorApp(App):
 
             return True
 
-    def on_start(self) -> None:  # start loading thread
+    def on_start(self) -> None:  # start loading
         delay = 5 if platform == "android" else 0
         Clock.schedule_once(self.load, delay)
         Clock.schedule_once(screen_manager.get_screen("Loading Screen").wait_for_loading_completion, delay)
@@ -970,7 +968,7 @@ class RockPaperScissorApp(App):
             screen_manager.get_screen("Computer Game").pause_game()
         return True
 
-    def load(self, delta_time=0) -> None:  # this method will be executed in another thread while loading screen is shown
+    def load(self, delta_time=0) -> None:  # this method will be executed to load stuff while loading screen is shown
         screen_manager.add_widget(MainMenu())
         screen_manager.add_widget(ComputerGame())
         screen_manager.add_widget(RulesScreen())
