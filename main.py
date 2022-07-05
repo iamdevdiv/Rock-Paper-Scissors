@@ -10,6 +10,7 @@ from random import choice as choose_randomly
 from kivy.app import App
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivy.utils import platform
 from kivy.base import stopTouchApp
 from kivy.core.window import Window
 from kivy.properties import ObjectProperty
@@ -35,18 +36,8 @@ class LoadingScreen(Screen):
     def wait_for_music(self, delta_time=0) -> None:
         # Thread is not alive means loading of all the widgets and music is completed, so cancel the thread which
         # was waiting for the loading to be completed, go to main menu and start background music
-        if not self.app.loading_thread.is_alive():
+        if self.app.loading_completed:
             self.wait_for_loading_completion.cancel()
-
-            screen_manager.remove_widget(screen_manager.get_screen("Computer Game"))
-            screen_manager.add_widget(ComputerGame())
-            screen_manager.add_widget(RulesScreen())
-            screen_manager.add_widget(CreditsScreen())
-            screen_manager.add_widget(EnterName())
-            screen_manager.add_widget(SelectMode())
-            screen_manager.add_widget(PauseScreen())
-            screen_manager.add_widget(CheatsScreen())
-
             screen_manager.current = "Main Menu"
             screen_manager.transition = WipeTransition()
             self.app.bg_music.play()
@@ -205,7 +196,7 @@ class SelectMode(Screen):
                     self.wait_for_player_event()
                     game = self.network.send("get")
                     screen_manager.add_widget(OnlineGame(self.network, int(self.network.get_player_no()), game))
-            return False  # stop scheduled interval (line 192)
+            return False  # stop scheduled interval (line 183)
 
     def disconnect(self, lit=True) -> None:
         self.wait_for_player_event.cancel()
@@ -685,7 +676,7 @@ class OnlineGame(Screen):
                     not self.game.play_again[self.player_no] and self.game.connected():
                 self.play_again_button.font_size = dp(25)
                 self.play_again_button.text = "Request declined !"
-                # Button still won't work until its text is not set to "Play again" (line 692)
+                # Button still won't work until its text is not set to "Play again" (line 683)
                 self.play_again_button.disabled = False
                 self.play_again_button.background_down = ""
                 if exit_time_left > 10:
@@ -951,7 +942,7 @@ class RockPaperScissorApp(App):
 
         self.begin_sound = SoundLoader.load("Sounds/begin.ogg")
         self.click_sound = SoundLoader.load("Sounds/click.ogg")
-        self.loading_thread = Thread(target=self.load)
+        self.loading_completed = False
 
     @staticmethod
     def back_button(window, key, *args) -> bool:  # handle back button click on android smartphone
@@ -970,25 +961,33 @@ class RockPaperScissorApp(App):
             return True
 
     def on_start(self) -> None:  # start loading thread
-        self.loading_thread.start()
-        screen_manager.get_screen("Loading Screen").wait_for_loading_completion()
+        delay = 5 if platform == "android" else 0
+        Clock.schedule_once(self.load, delay)
+        Clock.schedule_once(screen_manager.get_screen("Loading Screen").wait_for_loading_completion, delay)
 
     def on_pause(self) -> bool:
         if screen_manager.current in ["Computer Game", "Cheats Screen"]:
             screen_manager.get_screen("Computer Game").pause_game()
         return True
 
-    def load(self) -> None:  # this method will be executed in another thread while loading screen is shown
+    def load(self, delta_time=0) -> None:  # this method will be executed in another thread while loading screen is shown
+        screen_manager.add_widget(MainMenu())
         screen_manager.add_widget(ComputerGame())
+        screen_manager.add_widget(RulesScreen())
+        screen_manager.add_widget(CreditsScreen())
+        screen_manager.add_widget(EnterName())
+        screen_manager.add_widget(SelectMode())
+        screen_manager.add_widget(PauseScreen())
+        screen_manager.add_widget(CheatsScreen())
 
         self.bg_music = SoundLoader.load("Sounds/bg.ogg")
-        self.bg_music.loop = True
         self.main_game_music = SoundLoader.load("Sounds/main_game.ogg")
-        self.main_game_music.loop = True
+        self.bg_music.loop = self.main_game_music.loop = True
+
+        self.loading_completed = True
 
     def build(self) -> ScreenManager:
         screen_manager.add_widget(LoadingScreen())
-        screen_manager.add_widget(MainMenu())
         return screen_manager
 
 
