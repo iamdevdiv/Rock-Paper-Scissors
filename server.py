@@ -4,6 +4,17 @@ from online_game import MainGame
 from _thread import start_new_thread
 from socket import socket, AF_INET, SOCK_STREAM, error as socket_error
 
+
+# The function name says it all
+def print_and_log(*values) -> None:
+    text = ""
+    for value in values:
+        text += str(value)
+    print(text)
+    with open("connection_logs.log", "a") as f:
+        f.write(text)
+
+
 server = ""  # IP address
 port = 0  # ufw allow <port>
 
@@ -12,10 +23,10 @@ s = socket(AF_INET, SOCK_STREAM)
 try:
     s.bind((server, port))
 except socket_error as e:
-    print(e)
+    print_and_log(e)
 
 s.listen()
-print("Server started !")
+print_and_log("Server started !")
 
 games = {}  # game_id: MainGame object
 game_id = 1
@@ -108,7 +119,7 @@ def threaded_client(conn: socket, player_no: int, key: int) -> None:
 def disconnection_aftermath(game: MainGame, key: int, player_no: int, conn: socket) -> None:
     game.ready[player_no] = False  # the player is not ready for the game if he/she disconnects, obviously
     conn.close()
-    print(f"Player {player_no + 1} of game {key} has disconnected !")
+    print_and_log(f"Player {player_no + 1} of game {key} has disconnected !")
 
     # Set start_time for the exit timer for the other player who was playing with the disconnected player
     # Game is completed instantly if one of the players of the game disconnects
@@ -119,7 +130,7 @@ def disconnection_aftermath(game: MainGame, key: int, player_no: int, conn: sock
     global match_made
     # If both players have disconnected, delete the game (MainGame object)
     if game.ready == [False, False]:
-        print("Closing game", key)
+        print_and_log("Closing game", key)
         del games[key]
 
         # If there was only one player connected [True, False] who was waiting for an opponent [True, True] and has now
@@ -146,26 +157,29 @@ def disconnection_aftermath(game: MainGame, key: int, player_no: int, conn: sock
         match_made = [True, False]
 
 
-while True:
-    new_conn, addr = s.accept()
-    print("Connected to:", addr)
+try:
+    while True:
+        new_conn, addr = s.accept()
+        print_and_log("Connected to:", addr)
 
-    new_player_no = 0
-    if match_made[0] is False:  # no first player is connected so create a new game
-        print("Creating a new game...")
-        games[game_id] = MainGame(game_id)
-        games[game_id].ready[new_player_no] = True
-        match_made[0] = True
-        print(f"Player {new_player_no + 1} of game {game_id} is ready !")
-    else:  # first player is connected so add the second player to the game
-        new_player_no = 1
-        games[game_id].ready[new_player_no] = True
-        print(f"Player {new_player_no + 1} of game {game_id} is ready !")
-        print(f"Starting game {game_id}...")
+        new_player_no = 0
+        if match_made[0] is False:  # no first player is connected so create a new game
+            print_and_log("Creating a new game...")
+            games[game_id] = MainGame(game_id)
+            games[game_id].ready[new_player_no] = True
+            match_made[0] = True
+            print_and_log(f"Player {new_player_no + 1} of game {game_id} is ready !")
+        else:  # first player is connected so add the second player to the game
+            new_player_no = 1
+            games[game_id].ready[new_player_no] = True
+            print_and_log(f"Player {new_player_no + 1} of game {game_id} is ready !")
+            print_and_log(f"Starting game {game_id}...")
 
-    start_new_thread(threaded_client, (new_conn, new_player_no, game_id))
+        start_new_thread(threaded_client, (new_conn, new_player_no, game_id))
 
-    # If second player is added to a game, increment game_id for the next player and reset match_made
-    if new_player_no == 1:
-        game_id += 1
-        match_made = [False, False]
+        # If second player is added to a game, increment game_id for the next player and reset match_made
+        if new_player_no == 1:
+            game_id += 1
+            match_made = [False, False]
+except Exception as e:
+    print_and_log(str(e))
