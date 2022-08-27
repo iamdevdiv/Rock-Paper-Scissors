@@ -12,7 +12,7 @@ def print_and_log(*values) -> None:
         text += str(value)
     print(text)
     with open("connection_logs.log", "a") as f:
-        f.write(text)
+        f.write(text + "\n")
 
 
 server = ""  # IP address
