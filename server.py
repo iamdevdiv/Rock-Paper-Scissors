@@ -36,89 +36,99 @@ match_made = [False, False]  # index is the player number, True when player is c
 # Started by start_new_thread function when a client/player connects to server
 def threaded_client(conn: socket, player_no: int, key: int) -> None:
     global match_made
+    try:
+        conn.send(str.encode(str(player_no)))  # send player number to the connected player
+        games[key].names[player_no] = conn.recv(2048).decode()  # receive and set name of the player
+        # Length of name of the player greater than 12 implies an invalid request (such as HTTP request), so prevent
+        # starting such game and disconnect it immediately
+        if len(games[key].names[player_no]) > 12:
+            disconnection_aftermath(games[key], key, player_no, conn, True)
+            return
 
-    conn.send(str.encode(str(player_no)))  # send player number to the connected player
-    games[key].names[player_no] = conn.recv(2048).decode()  # receive and set name of the player
+        while True:
+            game = games[key]
+            try:
+                data = conn.recv(4096).decode()  # continuously receive data from the client
 
-    while True:
-        game = games[key]
-        try:
-            data = conn.recv(4096).decode()  # continuously receive data from the client
+                if not data or data == "disconnect":  # when the client disconnects or wants to disconnect
+                    disconnection_aftermath(game, key, player_no, conn, False)
+                    break
+                else:
+                    if data.lower() == "reset" and game.connected():  # when next round is about to be started
+                        game.reset()
+                    elif data.lower() == "again":  # when the player wants to play again
+                        game.play_again[player_no] = True
+                    elif data.lower() == "decline":  # when the player declines to play again
+                        game.play_again[1 - player_no] = False
+                    elif data.lower() == "accept":  # when the player accepts to play again
+                        game.current_round = 1
+                        game.points = [0, 0]
+                        game.started = False
+                        game.reset()
+                    #  When the player selects his/her move           or no move is selected within 15 seconds
+                    elif data.lower() in ["rock", "paper", "scissor"] or game.time_left[player_no] <= 0:
+                        if data.lower() in ["rock", "paper", "scissor"]:
+                            game.play(player_no, data)
+                        else:
+                            game.play(player_no, "timeout")
 
-            if not data or data == "disconnect":  # when the client disconnects or wants to disconnect
-                disconnection_aftermath(game, key, player_no, conn)
+                        winner = game.get_winner()
+                        # If there's no tie or timeout from both players and points are not already given
+                        if winner != -1 and winner is not None and game.give_points:
+                            game.current_round += 1
+                            game.points[winner] += 1
+                            game.give_points = False
+
+                    # 15 seconds timer for the players to select their move
+                    if game.start_time is not None and game.completed is False:
+                        if game.moves[0] == "":  # stop the timer when the player selects his/her move
+                            game.time_left[0] = 15 - int(time() - game.start_time)
+                            if game.time_left[0] < 0:
+                                disconnection_aftermath(game, key, 0, conn, False)
+
+                        if game.moves[1] == "":
+                            game.time_left[1] = 15 - int(time() - game.start_time)
+                            if game.time_left[1] < 0:
+                                disconnection_aftermath(game, key, 1, conn, False)
+
+                    # Set start_time after completion of all the rounds for the exit timer
+                    # CONDITIONS:
+                    # 1. game is not completed
+                    # and
+                    # 2. one of the players have won the sixth round (moves are not reset after sixth round)
+                    # or
+                    # 2. there was a tie and the seventh round is completed (points are not equal after tiebreaker
+                    # round)
+                    # NOTE: game.current_round is incremented by one after getting the winner of previous round, that's
+                    # why it will be compared with its incremented value
+                    if not game.completed and \
+                            ((game.current_round == 7 and game.moves[0] != "" and game.moves[1] != "") or
+                             (game.current_round == 8 and game.points[0] != game.points[1])):
+                        game.completed = True
+                        game.set_start_time()
+                    if game.completed:  # start exit timer when the game completes
+                        game.exit_time = 30 - int(time() - game.start_time)
+
+                    conn.sendall(dumps(game))
+
+                    # Game will start when both players connect hence the value of the 'started' property
+                    # It will be used to decrement the value of game_id if the second player of a game disconnects
+                    # immediately after connecting and the game didn't start (line 143)
+                    if game.started is False and game.connected():
+                        game.started = True
+            except ConnectionResetError:  # when the game is closed forcefully
+                disconnection_aftermath(game, key, player_no, conn, False)
                 break
-            else:
-                if data.lower() == "reset" and game.connected():  # when next round is about to be started
-                    game.reset()
-                elif data.lower() == "again":  # when the player wants to play again
-                    game.play_again[player_no] = True
-                elif data.lower() == "decline":  # when the player declines to play again
-                    game.play_again[1 - player_no] = False
-                elif data.lower() == "accept":  # when the player accepts to play again
-                    game.current_round = 1
-                    game.points = [0, 0]
-                    game.started = False
-                    game.reset()
-                #  When the player selects his/her move           or no move is selected within 15 seconds
-                elif data.lower() in ["rock", "paper", "scissor"] or game.time_left[player_no] <= 0:
-                    if data.lower() in ["rock", "paper", "scissor"]:
-                        game.play(player_no, data)
-                    else:
-                        game.play(player_no, "timeout")
-
-                    winner = game.get_winner()
-                    # If there's no tie or timeout from both players and points are not already given
-                    if winner != -1 and winner is not None and game.give_points:
-                        game.current_round += 1
-                        game.points[winner] += 1
-                        game.give_points = False
-
-                # 15 seconds timer for the players to select their move
-                if game.start_time is not None and game.completed is False:
-                    if game.moves[0] == "":  # stop the timer when the player selects his/her move
-                        game.time_left[0] = 15 - int(time() - game.start_time)
-                        if game.time_left[0] < 0:
-                            disconnection_aftermath(game, key, 0, conn)
-
-                    if game.moves[1] == "":
-                        game.time_left[1] = 15 - int(time() - game.start_time)
-                        if game.time_left[1] < 0:
-                            disconnection_aftermath(game, key, 1, conn)
-
-                # Set start_time after completion of all the rounds for the exit timer
-                # CONDITIONS:
-                # 1. game is not completed
-                # and
-                # 2. one of the players have won the sixth round (moves are not reset after sixth round)
-                # or
-                # 2. there was a tie and the seventh round is completed (points are not equal after tiebreaker round)
-                # NOTE: game.current_round is incremented by one after getting the winner of previous round, that's why
-                # it will be compared with its incremented value
-                if not game.completed and \
-                        ((game.current_round == 7 and game.moves[0] != "" and game.moves[1] != "") or
-                         (game.current_round == 8 and game.points[0] != game.points[1])):
-                    game.completed = True
-                    game.set_start_time()
-                if game.completed:  # start exit timer when the game completes
-                    game.exit_time = 30 - int(time() - game.start_time)
-
-                conn.sendall(dumps(game))
-
-                # Game will start when both players connect hence the value of the 'started' property
-                # It will be used to decrement the value of game_id if the second player of a game disconnects
-                # immediately after connecting and the game didn't start (line 143)
-                if game.started is False and game.connected():
-                    game.started = True
-        except ConnectionResetError:  # when the game is closed forcefully
-            disconnection_aftermath(game, key, player_no, conn)
-            break
+    except Exception as e:  # NOQA
+        print_and_log(str(e))
 
 
 # This function will be executed when a client/player disconnects
-def disconnection_aftermath(game: MainGame, key: int, player_no: int, conn: socket) -> None:
+def disconnection_aftermath(game: MainGame, key: int, player_no: int, conn: socket, invalid_req: bool) -> None:
     game.ready[player_no] = False  # the player is not ready for the game if he/she disconnects, obviously
     conn.close()
+    if invalid_req:
+        print_and_log(f"Game {key}: Invalid request!")
     print_and_log(f"Player {player_no + 1} of game {key} has disconnected !")
 
     # Set start_time for the exit timer for the other player who was playing with the disconnected player
