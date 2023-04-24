@@ -167,8 +167,8 @@ def disconnection_aftermath(game: MainGame, key: int, player_no: int, conn: sock
         match_made = [True, False]
 
 
-try:
-    while True:
+while True:
+    try:
         new_conn, addr = s.accept()
         print_and_log("Connected to:", addr)
 
@@ -191,5 +191,5 @@ try:
         if new_player_no == 1:
             game_id += 1
             match_made = [False, False]
-except Exception as e:
-    print_and_log(str(e))
+    except Exception as e:
+        print_and_log(str(e))
